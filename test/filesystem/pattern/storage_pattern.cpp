@@ -24,13 +24,14 @@ TEST_P(StoragePattern, resolve_valid_path) {
     ASSERT_NE(nullptr, storage->resolve(storage->scheme() + path));
 }
 
-TEST_P(StoragePattern, resolve_valid_path_then_check_entry_url) {
+TEST_P(StoragePattern, resolve_valid_path_then_check_entry) {
     auto storage = GetParam().storage();
     auto path    = GetParam().create_dir(DIRNAME);
     auto url     = storage->scheme() + path;
     auto entry   = storage->resolve(url);
     ASSERT_NE(entry, nullptr);
     ASSERT_EQ(entry->url(), url);
+    ASSERT_TRUE(entry->exists());
 }
 
 TEST_P(StoragePattern, use_cache) {
