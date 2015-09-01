@@ -6,18 +6,40 @@
 #include "test/filesystem/pattern/storage_helper.h"
 #include "filesystem/storage.h"
 
+#include <fstream>  // NOLINT
+
 
 namespace kodama { namespace filesystem {
+namespace fs = FILESYSTEM_NAMESPACE;
 
-StorageHelper::~StorageHelper()
-{}
+StorageHelper::~StorageHelper() noexcept {
+    for (const auto& path : entries_) {
+        try {
+            fs::remove(path);
+        } catch (...) {}
+    }
+}
 
 storage_ptr_t StorageHelper::storage() const {
     return std::make_shared<Storage>("file://");
 }
 
-fs::path StorageHelper::temp_directory_path() const {
-    return fs::temp_directory_path();
+std::string StorageHelper::create_dir(std::string path) const {
+    if (fs::exists(path)) {
+        return path;
+    }
+    fs::create_directory(path);
+    entries_.insert(path);
+    return path;
+}
+
+std::string StorageHelper::create_file(std::string path) const {
+    if (fs::exists(path)) {
+        return path;
+    }
+    std::ofstream{ path };
+    entries_.insert(path);
+    return path;
 }
 
 }  // namespace filesystem

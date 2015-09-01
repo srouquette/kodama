@@ -11,6 +11,8 @@
 
 #include <boost/filesystem.hpp>
 
+#include <set>
+
 
 namespace kodama { namespace filesystem {
 namespace fs = FILESYSTEM_NAMESPACE;
@@ -22,10 +24,14 @@ class StorageHelper {
     StorageHelper(StorageHelper&&)                  = default;
     StorageHelper& operator=(const StorageHelper&)  = default;
     StorageHelper& operator=(StorageHelper&&)       = default;
-    virtual ~StorageHelper();
+    virtual ~StorageHelper() noexcept;
 
     virtual storage_ptr_t storage() const;
-    virtual fs::path temp_directory_path() const;
+    virtual std::string create_dir(std::string path) const;
+    virtual std::string create_file(std::string path) const;
+
+ private:
+    mutable std::set<std::string>   entries_;
 };
 
 }  // namespace filesystem
