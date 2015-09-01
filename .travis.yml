@@ -2,6 +2,11 @@ sudo: false
 
 language: cpp
 
+cache:
+  apt: true
+  directories:
+    - .build
+
 addons:
   apt:
     sources:
@@ -26,10 +31,10 @@ install:
 
 script:
   - python waf configure
-  - python waf build_release
+  - python waf build_debug
 
 after_success:
-  - coveralls --gcov "gcov-4.9" --exclude test --exclude googletest --root . --build-root ".build/release" --gcov-options '\-lp'
+  - coveralls --gcov "gcov-4.9" --exclude test --exclude googletest --root . --build-root ".build/debug" --gcov-options '\-lp'
 
 after_failure:
   - cat ./.build/config.log

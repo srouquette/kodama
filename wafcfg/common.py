@@ -95,6 +95,8 @@ MSVC_FLAGS = {
         '/OPT:REF',         # remove unreferenced code
         '/OPT:ICF=5',       # remove unreferenced code
         '/LTCG'],           # optimize code at link-time (use /GL)
+    'arch_32': { 'env': { 'MSVC_MANIFEST': False } },
+    'arch_64': { 'env': { 'MSVC_MANIFEST': False } },
 }
 
 
@@ -114,19 +116,26 @@ def set_env(conf):
     for key, value in TARGETS[conf.env.TARGET].items():
         conf.env[key] = value
 
-
 @conf
-def check_libs(conf):
+def check_gtest(conf):
     conf.check(lib='gtest' if conf.variant == 'release' else 'gtestd',
                header_name='gtest/gtest.h', uselib_store='GTEST', mandatory=False)
     conf.check(lib='gmock' if conf.variant == 'release' else 'gmockd', use='GTEST',
                header_name='gmock/gmock.h', uselib_store='GMOCK', mandatory=False)
-    conf.check(lib='gcov', uselib_store='GCOV', mandatory=False)
+
+@conf
+def check_gcov(conf):
+    if conf.variant == 'debug':
+        conf.check(lib='gcov', uselib_store='GCOV', mandatory=False)
     if (conf.env.LIB_GCOV):
         conf.env.CXXFLAGS  += ['--coverage', '-fprofile-arcs', '-ftest-coverage']
         conf.env.LINKFLAGS += ['--coverage', '-fprofile-arcs']
-    boost_params = dict(dict(mt  = True,
-                             abi = 'gd' if conf.variant == 'debug' else ''),
+
+@conf
+def check_libs(conf):
+    check_gtest(conf)
+    check_gcov(conf)
+    boost_params = dict(dict(mt = True, abi = 'gd' if conf.variant == 'debug' else ''),
                         **FLAGS[conf.env.COMPILER_CXX]['boost'])
     conf.check_boost(**boost_params)
 
@@ -195,5 +204,3 @@ def set_variant(conf, variant, env):
     if compiler_target and 'env' in compiler_target:
         for key, value in compiler_target['env'].items():
             conf.env[key] = value
-
-    conf.env.MSVC_MANIFEST = False
