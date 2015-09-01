@@ -1,0 +1,9 @@
+.build/
+bin/
+temp/
+waf3*
+*.pyc
+.lock-waf*
+kodama.sublime-workspace
+.tags*
+*.diff
