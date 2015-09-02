@@ -7,7 +7,6 @@
 #include "filesystem/entry.h"
 #include "filesystem/exception.h"
 #include "filesystem/property_status.h"
-#include <iostream>
 
 namespace kodama { namespace filesystem {
 namespace fs = FILESYSTEM_NAMESPACE;
@@ -34,7 +33,6 @@ entry_ptr_t Storage::resolve(const std::string& url) {
     auto path   = split(url);
     auto status = fs::status(path);
     if (!fs::exists(status)) {
-        std::cout << "doesn't exists " << path << std::endl;
         return nullptr;
     }
     auto entry = make(url);

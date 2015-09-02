@@ -18,27 +18,27 @@ const std::string URL{ SCHEME + PATH };
 TEST(UrlResolverTest, add_storage) {
     UrlResolver resolver;
     auto storage = std::make_shared<MockStorage>(SCHEME);
-    EXPECT_NO_THROW(resolver.add(storage));
+    ASSERT_NO_THROW(resolver.add(storage));
 }
 
 TEST(UrlResolverTest, add_storage_with_existing_scheme) {
     UrlResolver resolver;
     auto storage = std::make_shared<MockStorage>(SCHEME);
-    EXPECT_NO_THROW(resolver.add(storage));
-    EXPECT_NO_THROW(resolver.add(storage));
+    ASSERT_NO_THROW(resolver.add(storage));
+    ASSERT_NO_THROW(resolver.add(storage));
 }
 
 TEST(UrlResolverTest, resolve_without_storage) {
     UrlResolver resolver;
-    EXPECT_THROW(resolver.resolve(URL), filesystem_error);
+    ASSERT_THROW(resolver.resolve(URL), filesystem_error);
 }
 
 TEST(UrlResolverTest, cannot_resolve_url) {
     UrlResolver resolver;
     auto storage = std::make_shared<MockStorage>(SCHEME);
     EXPECT_CALL(*storage, resolve(URL)).WillOnce(testing::Return(nullptr));
-    EXPECT_NO_THROW(resolver.add(storage));
-    EXPECT_THROW(resolver.resolve(URL), filesystem_error);
+    ASSERT_NO_THROW(resolver.add(storage));
+    ASSERT_THROW(resolver.resolve(URL), filesystem_error);
 }
 
 TEST(UrlResolverTest, can_resolve_url) {
@@ -48,9 +48,9 @@ TEST(UrlResolverTest, can_resolve_url) {
     auto entry = storage->make(URL);
     ASSERT_NE(entry, nullptr);
     EXPECT_CALL(*storage, resolve(URL)).WillOnce(testing::Return(entry));
-    EXPECT_NO_THROW(resolver.add(storage));
-    EXPECT_NO_THROW(result = resolver.resolve(URL));
-    EXPECT_EQ(result, entry);
+    ASSERT_NO_THROW(resolver.add(storage));
+    ASSERT_NO_THROW(result = resolver.resolve(URL));
+    ASSERT_EQ(result, entry);
 }
 
 TEST(UrlResolverTest, resolve_url_with_appropriate_storage) {
@@ -65,10 +65,10 @@ TEST(UrlResolverTest, resolve_url_with_appropriate_storage) {
     ASSERT_NE(entry, nullptr);
     EXPECT_CALL(*bad_storage, resolve(url)).WillOnce(testing::Return(nullptr));
     EXPECT_CALL(*good_storage, resolve(url)).WillOnce(testing::Return(entry));
-    EXPECT_NO_THROW(resolver.add(bad_storage));
-    EXPECT_NO_THROW(resolver.add(good_storage));
-    EXPECT_NO_THROW(result = resolver.resolve(url));
-    EXPECT_EQ(result, entry);
+    ASSERT_NO_THROW(resolver.add(bad_storage));
+    ASSERT_NO_THROW(resolver.add(good_storage));
+    ASSERT_NO_THROW(result = resolver.resolve(url));
+    ASSERT_EQ(result, entry);
 }
 
 }  // namespace filesystem

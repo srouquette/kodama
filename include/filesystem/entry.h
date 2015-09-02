@@ -45,10 +45,10 @@ class Entry {
 
     void set_property(property_ptr_t&& property);
 
- private:
     template<typename T>
     const T& get_property() const;
 
+ private:
     using property_map_t = std::unordered_map<std::type_index, property_ptr_t>;
     mutable std::mutex              mutex_;
     mutable boost::shared_mutex     shared_mutex_;

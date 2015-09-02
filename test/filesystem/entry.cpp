@@ -5,6 +5,7 @@
 
 #include "filesystem/entry.h"
 #include "filesystem/exception.h"
+#include "filesystem/property_status.h"
 #include "test/filesystem/mock/storage.h"
 #include "gmock/gmock.h"
 
@@ -16,20 +17,31 @@ namespace fs = FILESYSTEM_NAMESPACE;
 const std::string SCHEME{ "mock://" };
 const std::string URL = SCHEME + "path";
 
+TEST(EntryTest, unknown_property) {
+    auto storage = std::make_shared<MockStorage>(SCHEME);
+    auto entry   = storage->make(URL);
+    ASSERT_NE(entry, nullptr);
+    ASSERT_THROW(entry->get_property<PropertyStatus>(), std::out_of_range);
+}
+
+TEST(EntryTest, get_property) {
+    auto storage = std::make_shared<MockStorage>(SCHEME);
+    auto entry   = storage->make(URL);
+    ASSERT_NE(entry, nullptr);
+    entry->set_property(std::make_unique<PropertyStatus>(fs::file_status{}));
+    ASSERT_NO_THROW(entry->get_property<PropertyStatus>());
+}
+
 TEST(EntryTest, same_url) {
-    try {
-        auto storage = std::make_shared<MockStorage>(SCHEME);
-        auto entry = storage->make(URL);
-        ASSERT_NE(entry, nullptr);
-        ASSERT_EQ(entry->url(), URL);
-    } catch (const std::exception& e) {
-        std::cout << e.what() << std::endl;
-    }
+    auto storage = std::make_shared<MockStorage>(SCHEME);
+    auto entry   = storage->make(URL);
+    ASSERT_NE(entry, nullptr);
+    ASSERT_EQ(entry->url(), URL);
 }
 
 TEST(EntryTest, is_dir) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
-    auto entry = storage->make(URL);
+    auto entry   = storage->make(URL);
     ASSERT_NE(entry, nullptr);
     EXPECT_CALL(*storage, is_dir(testing::Ref(*entry))).WillOnce(testing::Return(false));
     ASSERT_FALSE(entry->is_dir());
@@ -39,7 +51,7 @@ TEST(EntryTest, is_dir) {
 
 TEST(EntryTest, exists) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
-    auto entry = storage->make(URL);
+    auto entry   = storage->make(URL);
     ASSERT_NE(entry, nullptr);
     EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(false));
     ASSERT_FALSE(entry->exists());
@@ -49,12 +61,12 @@ TEST(EntryTest, exists) {
 
 TEST(EntryTest, invalidate) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
-    auto entry = storage->make(URL);
+    auto entry   = storage->make(URL);
     ASSERT_NE(entry, nullptr);
     entry->invalidate();
     EXPECT_CALL(*storage, exists(testing::Ref(*entry))).Times(0);
-    EXPECT_FALSE(entry->exists());
-    EXPECT_THROW(entry->is_dir(), filesystem_error);
+    ASSERT_FALSE(entry->exists());
+    ASSERT_THROW(entry->is_dir(), filesystem_error);
 }
 
 }  // namespace filesystem
