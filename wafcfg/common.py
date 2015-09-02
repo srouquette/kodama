@@ -110,6 +110,7 @@ FLAGS = {
 
 @conf
 def set_env(conf):
+    conf.env.MSVC_LAZY_AUTODETECT = True
     conf.define('BOOSTTHREAD_USE_LIB', 1)
     conf.define('BOOSTTHREAD_VERSION', 4)
     conf.define('GTEST_LANG_CXX11', 1)
