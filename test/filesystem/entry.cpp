@@ -8,22 +8,29 @@
 #include "test/filesystem/mock/storage.h"
 #include "gmock/gmock.h"
 
+#include <iostream>
+
 namespace kodama { namespace filesystem {
 namespace fs = FILESYSTEM_NAMESPACE;
 
 const std::string SCHEME{ "mock://" };
 const std::string URL = SCHEME + "path";
-const fs::file_status STATUS;
 
-TEST(EntryTest, url) {
-    auto storage = std::make_shared<MockStorage>(SCHEME);
-    auto entry = storage->make(URL, STATUS);
-    ASSERT_EQ(entry->url(), URL);
+TEST(EntryTest, same_url) {
+    try {
+        auto storage = std::make_shared<MockStorage>(SCHEME);
+        auto entry = storage->make(URL);
+        ASSERT_NE(entry, nullptr);
+        ASSERT_EQ(entry->url(), URL);
+    } catch (const std::exception& e) {
+        std::cout << e.what() << std::endl;
+    }
 }
 
 TEST(EntryTest, is_dir) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
-    auto entry = storage->make(URL, STATUS);
+    auto entry = storage->make(URL);
+    ASSERT_NE(entry, nullptr);
     EXPECT_CALL(*storage, is_dir(testing::Ref(*entry))).WillOnce(testing::Return(false));
     ASSERT_FALSE(entry->is_dir());
     EXPECT_CALL(*storage, is_dir(testing::Ref(*entry))).WillOnce(testing::Return(true));
@@ -32,7 +39,8 @@ TEST(EntryTest, is_dir) {
 
 TEST(EntryTest, exists) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
-    auto entry = storage->make(URL, STATUS);
+    auto entry = storage->make(URL);
+    ASSERT_NE(entry, nullptr);
     EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(false));
     ASSERT_FALSE(entry->exists());
     EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(true));
@@ -41,7 +49,8 @@ TEST(EntryTest, exists) {
 
 TEST(EntryTest, invalidate) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
-    auto entry = storage->make(URL, STATUS);
+    auto entry = storage->make(URL);
+    ASSERT_NE(entry, nullptr);
     entry->invalidate();
     EXPECT_CALL(*storage, exists(testing::Ref(*entry))).Times(0);
     EXPECT_FALSE(entry->exists());

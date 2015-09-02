@@ -7,14 +7,15 @@
 #define INCLUDE_FILESYSTEM_ENTRY_H_
 
 #include "filesystem/forward_decl.h"
-#include "filesystem/namespace.h"
 #include "thread/lock.h"
 
+#include <mutex>  // NOLINT
 #include <string>
+#include <typeindex>
+#include <unordered_map>
 
 
 namespace kodama { namespace filesystem {
-namespace fs = FILESYSTEM_NAMESPACE;
 
 class Entry {
  public:
@@ -26,7 +27,6 @@ class Entry {
 
     Entry(const storage_ptr_t& storage,
           const std::string& url,
-          const fs::file_status& status,
           const key&);
 
     Entry(const Entry&)             = default;
@@ -43,12 +43,30 @@ class Entry {
     template<typename T>
     T lock() const;
 
+    void set_property(property_ptr_t&& property);
+
  private:
-    mutable boost::shared_mutex     mutex_;
-    fs::file_status                 status_;
+    template<typename T>
+    const T& get_property() const;
+
+    using property_map_t = std::unordered_map<std::type_index, property_ptr_t>;
+    mutable std::mutex              mutex_;
+    mutable boost::shared_mutex     shared_mutex_;
     std::weak_ptr<Storage>          storage_;
     const std::string               url_;
+    property_map_t                  properties_;
 };
+
+
+template<typename T>
+const T& Entry::get_property() const {
+    const auto& ptr = properties_.at(std::type_index{ typeid(T) });
+    if (!ptr) {
+        throw std::out_of_range{ std::string{ "property is null: " } + typeid(T).name() };
+    }
+    return *dynamic_cast<T*>(ptr.get());
+}
+
 
 }  // namespace filesystem
 }  // namespace kodama
