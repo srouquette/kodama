@@ -15,7 +15,11 @@ const std::string FILENAME{ "kodama_test_file" };
 TEST_P(StoragePattern, resolve_without_scheme) {
     auto storage = GetParam().storage();
     auto path    = GetParam().create_dir(DIRNAME);
-    ASSERT_NE(nullptr, storage->resolve(path));
+    if (GetParam().can_work_without_scheme()) {
+        ASSERT_NE(nullptr, storage->resolve(path));
+    } else {
+        ASSERT_EQ(nullptr, storage->resolve(path));
+    }
 }
 
 TEST_P(StoragePattern, resolve_valid_path) {

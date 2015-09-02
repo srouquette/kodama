@@ -27,6 +27,7 @@ class StorageHelper {
     virtual ~StorageHelper() noexcept;
 
     virtual storage_ptr_t storage() const;
+    virtual bool can_work_without_scheme() const;
     virtual std::string create_dir(std::string path) const;
     virtual std::string create_file(std::string path) const;
 

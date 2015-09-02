@@ -24,6 +24,10 @@ storage_ptr_t StorageHelper::storage() const {
     return std::make_shared<Storage>("file://");
 }
 
+bool StorageHelper::can_work_without_scheme() const {
+    return true;
+}
+
 std::string StorageHelper::create_dir(std::string path) const {
     if (fs::exists(path)) {
         return path;
