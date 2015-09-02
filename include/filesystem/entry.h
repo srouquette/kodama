@@ -60,11 +60,7 @@ class Entry {
 
 template<typename T>
 const T& Entry::get_property() const {
-    const auto& ptr = properties_.at(std::type_index{ typeid(T) });
-    if (!ptr) {
-        throw std::out_of_range{ std::string{ "property is null: " } + typeid(T).name() };
-    }
-    return *dynamic_cast<T*>(ptr.get());
+    return *dynamic_cast<T*>(properties_.at(std::type_index{ typeid(T) }).get());
 }
 
 

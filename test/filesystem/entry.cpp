@@ -24,6 +24,22 @@ TEST(EntryTest, unknown_property) {
     ASSERT_THROW(entry->get_property<PropertyStatus>(), std::out_of_range);
 }
 
+TEST(EntryTest, set_property_with_nullptr) {
+    auto storage = std::make_shared<MockStorage>(SCHEME);
+    auto entry   = storage->make(URL);
+    ASSERT_NE(entry, nullptr);
+    ASSERT_THROW(entry->set_property(nullptr), std::bad_typeid);
+}
+
+TEST(EntryTest, set_property_with_null_property) {
+    auto storage = std::make_shared<MockStorage>(SCHEME);
+    auto entry   = storage->make(URL);
+    ASSERT_NE(entry, nullptr);
+    auto property = std::make_unique<PropertyStatus>(fs::file_status{});
+    property.reset(nullptr);
+    ASSERT_THROW(entry->set_property(std::move(property)), std::bad_typeid);
+}
+
 TEST(EntryTest, get_property) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
     auto entry   = storage->make(URL);
