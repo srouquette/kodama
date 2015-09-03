@@ -50,17 +50,12 @@ void Entry::invalidate() noexcept {
     storage_.reset();
 }
 
-template<typename T>
-T Entry::lock() const {
-    T lock{ shared_mutex_ };
-    if (!exists()) {
-        throw EXCEPTION(__FUNCTION__, url_, no_such_file_or_directory);
-    }
-    return lock;
-}
-
 void Entry::set_property(property_ptr_t&& property) {
-    properties_.emplace(std::type_index{ typeid(*property) }, std::move(property));
+#if _MSC_VER >= 1900
+    properties_.insert_or_assign(std::type_index{ typeid(*property) }, std::move(property));
+#else
+    properties_[std::type_index{ typeid(*property) }] = std::move(property);
+#endif
 }
 
 }  // namespace filesystem

@@ -40,10 +40,10 @@ class Entry {
     bool exists() const;
     void invalidate() noexcept;
 
+    void set_property(property_ptr_t&& property);
+
     template<typename T>
     T lock() const;
-
-    void set_property(property_ptr_t&& property);
 
     template<typename T>
     const T& get_property() const;
@@ -57,6 +57,16 @@ class Entry {
     property_map_t                  properties_;
 };
 
+// templates
+
+template<typename T>
+T Entry::lock() const {
+    T lock{ shared_mutex_ };
+    if (!exists()) {
+        throw EXCEPTION(__FUNCTION__, url_, no_such_file_or_directory);
+    }
+    return lock;
+}
 
 template<typename T>
 const T& Entry::get_property() const {
