@@ -75,6 +75,26 @@ TEST(EntryTest, exists) {
     ASSERT_TRUE(entry->exists());
 }
 
+TEST(EntryTest, shared_lock) {
+    auto storage = std::make_shared<MockStorage>(SCHEME);
+    auto entry   = storage->make(URL);
+    ASSERT_NE(entry, nullptr);
+    EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(false));
+    ASSERT_THROW(entry->shared_lock(), filesystem_error);
+    EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(true));
+    ASSERT_NO_THROW(entry->shared_lock());
+}
+
+TEST(EntryTest, unique_lock) {
+    auto storage = std::make_shared<MockStorage>(SCHEME);
+    auto entry   = storage->make(URL);
+    ASSERT_NE(entry, nullptr);
+    EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(false));
+    ASSERT_THROW(entry->unique_lock(), filesystem_error);
+    EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(true));
+    ASSERT_NO_THROW(entry->unique_lock());
+}
+
 TEST(EntryTest, invalidate) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
     auto entry   = storage->make(URL);

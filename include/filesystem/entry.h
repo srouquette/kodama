@@ -38,12 +38,12 @@ class Entry {
     const std::string& url() const noexcept;
     bool is_dir() const;
     bool exists() const;
+    thread::shared_lock_t shared_lock() const;
+    thread::unique_lock_t unique_lock() const;
+    void throws_if_nonexistent() const;
     void invalidate() noexcept;
 
     void set_property(property_ptr_t&& property);
-
-    template<typename T>
-    T lock() const;
 
     template<typename T>
     const T& get_property() const;
@@ -58,15 +58,6 @@ class Entry {
 };
 
 // templates
-
-template<typename T>
-T Entry::lock() const {
-    T lock{ shared_mutex_ };
-    if (!exists()) {
-        throw EXCEPTION(__FUNCTION__, url_, no_such_file_or_directory);
-    }
-    return lock;
-}
 
 template<typename T>
 const T& Entry::get_property() const {

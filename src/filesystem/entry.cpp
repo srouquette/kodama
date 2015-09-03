@@ -46,6 +46,24 @@ bool Entry::exists() const {
     return storage ? storage->exists(*this) : false;
 }
 
+void Entry::throws_if_nonexistent() const {
+    if (!exists()) {
+        throw EXCEPTION(__FUNCTION__, url_, no_such_file_or_directory);
+    }
+}
+
+thread::shared_lock_t Entry::shared_lock() const {
+    thread::shared_lock_t lock{ shared_mutex_ };
+    throws_if_nonexistent();
+    return lock;
+}
+
+thread::unique_lock_t Entry::unique_lock() const {
+    thread::unique_lock_t lock{ shared_mutex_ };
+    throws_if_nonexistent();
+    return lock;
+}
+
 void Entry::invalidate() noexcept {
     storage_.reset();
 }
