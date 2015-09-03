@@ -6,7 +6,7 @@
 #include "filesystem/storage.h"
 #include "filesystem/entry.h"
 #include "filesystem/exception.h"
-
+#include "filesystem/property_status.h"
 
 namespace kodama { namespace filesystem {
 namespace fs = FILESYSTEM_NAMESPACE;
@@ -30,26 +30,27 @@ entry_ptr_t Storage::resolve(const std::string& url) {
     if (lb != entries_.end() && !entries_.key_comp()(url, lb->first)) {
         return lb->second;
     }
-    fs::path path{ split(url) };
+    auto path   = split(url);
     auto status = fs::status(path);
     if (!fs::exists(status)) {
         return nullptr;
     }
-    auto entry = make(url, status);
+    auto entry = make(url);
+    entry->set_property(std::make_unique<PropertyStatus>(status));
     entries_.insert(lb, entries_t::value_type{ url, entry });
     return entry;
 }
 
-entry_ptr_t Storage::make(const std::string& url, const fs::file_status& status) {
-    return std::make_shared<Entry>(shared_from_this(), url, status, Entry::key{});
+entry_ptr_t Storage::make(const std::string& url) {
+    return std::make_shared<Entry>(shared_from_this(), url, Entry::key{});
 }
 
 bool Storage::is_dir(const Entry& entry) const {
-    return fs::is_directory(entry.status_);
+    return fs::is_directory(entry.get_property<PropertyStatus>().value());
 }
 
 bool Storage::exists(const Entry& entry) const {
-    return fs::exists(entry.status_);
+    return fs::exists(entry.get_property<PropertyStatus>().value());
 }
 
 fs::path Storage::split(const std::string& url) const {
