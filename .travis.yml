@@ -27,7 +27,7 @@ addons:
     notification_email: srouquette@gmail.com
     build_command_prepend: "python waf configure"
     build_command: "python waf build_debug"
-    branch_pattern: master
+    branch_pattern: develop
 
 compiler:
   - g++
