@@ -35,22 +35,21 @@ entry_ptr_t Storage::resolve(const std::string& url) {
     if (!fs::exists(status)) {
         return nullptr;
     }
-    auto entry = make(url);
-    entry->set_property(std::make_unique<PropertyStatus>(status));
+    auto entry = make(url, status);
     entries_.insert(lb, entries_t::value_type{ url, entry });
     return entry;
 }
 
-entry_ptr_t Storage::make(const std::string& url) {
-    return std::make_shared<Entry>(shared_from_this(), url, Entry::key{});
+entry_ptr_t Storage::make(const std::string& url, const fs::file_status& status) {
+    return std::make_shared<Entry>(shared_from_this(), url, status, Entry::key{});
 }
 
 bool Storage::is_dir(const Entry& entry) const {
-    return fs::is_directory(entry.get_property<PropertyStatus>().value());
+    return fs::is_directory(entry.status_);
 }
 
 bool Storage::exists(const Entry& entry) const {
-    return fs::exists(entry.get_property<PropertyStatus>().value());
+    return fs::exists(entry.status_);
 }
 
 fs::path Storage::split(const std::string& url) const {

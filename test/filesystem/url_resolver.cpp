@@ -14,6 +14,7 @@ namespace fs = FILESYSTEM_NAMESPACE;
 const std::string SCHEME{ "mock://" };
 const std::string PATH{ "path" };
 const std::string URL{ SCHEME + PATH };
+const fs::file_status STATUS;
 
 TEST(UrlResolverTest, add_storage) {
     UrlResolver resolver;
@@ -45,7 +46,7 @@ TEST(UrlResolverTest, can_resolve_url) {
     UrlResolver resolver;
     entry_ptr_t result;
     auto storage = std::make_shared<MockStorage>(SCHEME);
-    auto entry = storage->make(URL);
+    auto entry   = storage->make(URL, STATUS);
     ASSERT_NE(entry, nullptr);
     EXPECT_CALL(*storage, resolve(URL)).WillOnce(testing::Return(entry));
     ASSERT_NO_THROW(resolver.add(storage));
@@ -61,7 +62,7 @@ TEST(UrlResolverTest, resolve_url_with_appropriate_storage) {
     const std::string url = good_scheme + PATH;
     auto good_storage = std::make_shared<MockStorage>(good_scheme);
     auto bad_storage  = std::make_shared<MockStorage>(bad_scheme);
-    auto entry = good_storage->make(good_scheme);
+    auto entry = good_storage->make(good_scheme, STATUS);
     ASSERT_NE(entry, nullptr);
     EXPECT_CALL(*bad_storage, resolve(url)).WillOnce(testing::Return(nullptr));
     EXPECT_CALL(*good_storage, resolve(url)).WillOnce(testing::Return(entry));

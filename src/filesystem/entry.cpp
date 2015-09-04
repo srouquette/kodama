@@ -14,9 +14,11 @@ namespace fs = FILESYSTEM_NAMESPACE;
 
 Entry::Entry(const storage_ptr_t& storage,
              const std::string& url,
+             const fs::file_status& status,
              const key&)
     : mutex_{}
     , shared_mutex_{}
+    , status_{ status }
     , storage_{ storage }
     , url_{ url }
 {}
@@ -66,14 +68,6 @@ thread::unique_lock_t Entry::unique_lock() const {
 
 void Entry::invalidate() noexcept {
     storage_.reset();
-}
-
-void Entry::set_property(property_ptr_t&& property) {
-#if _MSC_VER >= 1900
-    properties_.insert_or_assign(std::type_index{ typeid(*property) }, std::move(property));
-#else
-    properties_[std::type_index{ typeid(*property) }] = std::move(property);
-#endif
 }
 
 }  // namespace filesystem
