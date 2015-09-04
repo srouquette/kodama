@@ -19,7 +19,8 @@ namespace kodama { namespace filesystem {
 
 class Entry {
  public:
-    friend Storage;
+    friend class Storage;
+    friend class MockStorage;
     class key {
         friend class Storage;
         key() {}
@@ -45,6 +46,7 @@ class Entry {
 
     void set_property(property_ptr_t&& property);
 
+ protected:
     template<typename T>
     const T& get_property() const;
 
@@ -63,7 +65,6 @@ template<typename T>
 const T& Entry::get_property() const {
     return *dynamic_cast<T*>(properties_.at(std::type_index{ typeid(T) }).get());
 }
-
 
 }  // namespace filesystem
 }  // namespace kodama

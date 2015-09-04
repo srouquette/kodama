@@ -21,7 +21,7 @@ TEST(EntryTest, unknown_property) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
     auto entry   = storage->make(URL);
     ASSERT_NE(entry, nullptr);
-    ASSERT_THROW(entry->get_property<PropertyStatus>(), std::out_of_range);
+    ASSERT_THROW(storage->get_entry_property<PropertyStatus>(*entry), std::out_of_range);
 }
 
 TEST(EntryTest, set_property_with_nullptr) {
@@ -45,7 +45,7 @@ TEST(EntryTest, get_property) {
     auto entry   = storage->make(URL);
     ASSERT_NE(entry, nullptr);
     entry->set_property(std::make_unique<PropertyStatus>(fs::file_status{}));
-    ASSERT_NO_THROW(entry->get_property<PropertyStatus>());
+    ASSERT_NO_THROW(storage->get_entry_property<PropertyStatus>(*entry));
 }
 
 TEST(EntryTest, same_url) {
