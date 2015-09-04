@@ -20,11 +20,6 @@ class MockStorage : public Storage {
     using Storage::Storage;
     using Storage::make;
 
-    template<typename T>
-    const T& get_entry_property(const Entry& entry) const {
-        return entry.get_property<T>();
-    }
-
     MOCK_METHOD1(resolve, entry_ptr_t (const std::string& url));
     MOCK_CONST_METHOD1(is_dir, bool (const Entry& entry));
     MOCK_CONST_METHOD1(exists, bool (const Entry& entry));
