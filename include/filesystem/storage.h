@@ -11,6 +11,8 @@
 
 #include "filesystem/namespace.h"
 
+#include <boost/signals2.hpp>
+
 #include <map>
 #include <mutex>  // NOLINT
 #include <string>
@@ -25,6 +27,8 @@ namespace fs = FILESYSTEM_NAMESPACE;
 class Storage : public std::enable_shared_from_this<Storage> {
  public:
     friend Entry;
+    using signal_t  = boost::signals2::signal<void (const Entry&)>;
+
     explicit Storage(const std::string& scheme);
     Storage(const Storage&)             = default;
     Storage(Storage&&)                  = default;
@@ -35,17 +39,26 @@ class Storage : public std::enable_shared_from_this<Storage> {
     const std::string& scheme() const;
     virtual entry_ptr_t resolve(const std::string& url);
 
+    void on_create(signal_t::slot_type callback);
+    void on_delete(signal_t::slot_type callback);
+    void on_content_update(signal_t::slot_type callback);
+
  protected:
-    virtual entry_ptr_t make(const std::string& url, const fs::file_status& status);
+    virtual entry_ptr_t create(const std::string& url, const fs::file_status& status);
     virtual bool is_dir(const Entry& entry) const;
     virtual bool exists(const Entry& entry) const;
     fs::path split(const std::string& url) const;
 
  private:
     using entries_t = std::map<std::string, entry_ptr_t>;
+
     entries_t           entries_;
     mutable std::mutex  mutex_;
     std::string         scheme_;
+
+    signal_t            on_create_;
+    signal_t            on_delete_;
+    signal_t            on_content_update_;
 };
 
 }  // namespace filesystem

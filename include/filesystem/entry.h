@@ -12,8 +12,6 @@
 
 #include <mutex>  // NOLINT
 #include <string>
-#include <typeindex>
-#include <unordered_map>
 
 
 namespace kodama { namespace filesystem {
@@ -22,7 +20,6 @@ namespace fs = FILESYSTEM_NAMESPACE;
 class Entry {
  public:
     friend class Storage;
-    friend class MockStorage;
     class key {
         friend class Storage;
         key() {}
@@ -49,7 +46,6 @@ class Entry {
  private:
     void throws_if_nonexistent() const;
 
-    using property_map_t = std::unordered_map<std::type_index, property_ptr_t>;
     mutable std::mutex              mutex_;
     mutable boost::shared_mutex     shared_mutex_;
     fs::file_status                 status_;

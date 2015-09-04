@@ -38,6 +38,31 @@ TEST_P(StoragePattern, resolve_valid_path_then_check_entry) {
     ASSERT_TRUE(entry->exists());
 }
 
+TEST_P(StoragePattern, on_create_signal) {
+    auto storage = GetParam().storage();
+    auto path    = GetParam().create_dir(DIRNAME);
+    std::string url, expected = storage->scheme() + path;
+    storage->on_create([&url](const Entry& entry) { url = entry.url(); });
+    ASSERT_NE(nullptr, storage->resolve(expected));
+    ASSERT_EQ(url, expected);
+}
+
+TEST_P(StoragePattern, on_delete_signal) {
+    auto storage = GetParam().storage();
+    auto path    = GetParam().create_dir(DIRNAME);
+    std::string url, expected = storage->scheme() + path;
+    storage->on_delete([&url](const Entry& entry) { url = entry.url(); });
+    // TODO(Syl): delete entry from teh cache
+}
+
+TEST_P(StoragePattern, on_content_update_signal) {
+    auto storage = GetParam().storage();
+    auto path    = GetParam().create_dir(DIRNAME);
+    std::string url, expected = storage->scheme() + path;
+    storage->on_content_update([&url](const Entry& entry) { url = entry.url(); });
+    // TODO(Syl): list directory content and update entry
+}
+
 TEST_P(StoragePattern, use_cache) {
     auto storage = GetParam().storage();
     auto path    = GetParam().create_dir(DIRNAME);

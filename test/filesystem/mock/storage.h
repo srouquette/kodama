@@ -18,7 +18,7 @@ namespace kodama { namespace filesystem {
 class MockStorage : public Storage {
  public:
     using Storage::Storage;
-    using Storage::make;
+    using Storage::create;
 
     MOCK_METHOD1(resolve, entry_ptr_t (const std::string& url));
     MOCK_CONST_METHOD1(is_dir, bool (const Entry& entry));

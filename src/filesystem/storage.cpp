@@ -15,6 +15,9 @@ Storage::Storage(const std::string& scheme)
     : entries_{}
     , mutex_{}
     , scheme_{ scheme }
+    , on_create_{}
+    , on_delete_{}
+    , on_content_update_{}
 {}
 
 Storage::~Storage()
@@ -35,12 +38,25 @@ entry_ptr_t Storage::resolve(const std::string& url) {
     if (!fs::exists(status)) {
         return nullptr;
     }
-    auto entry = make(url, status);
+    auto entry = create(url, status);
     entries_.insert(lb, entries_t::value_type{ url, entry });
+    on_create_(*entry);
     return entry;
 }
 
-entry_ptr_t Storage::make(const std::string& url, const fs::file_status& status) {
+void Storage::on_create(signal_t::slot_type callback) {
+    on_create_.connect(callback);
+}
+
+void Storage::on_delete(signal_t::slot_type callback) {
+    on_delete_.connect(callback);
+}
+
+void Storage::on_content_update(signal_t::slot_type callback) {
+    on_content_update_.connect(callback);
+}
+
+entry_ptr_t Storage::create(const std::string& url, const fs::file_status& status) {
     return std::make_shared<Entry>(shared_from_this(), url, status, Entry::key{});
 }
 
