@@ -37,7 +37,7 @@ TEST(UrlResolverTest, resolve_without_storage) {
 TEST(UrlResolverTest, cannot_resolve_url) {
     UrlResolver resolver;
     auto storage = std::make_shared<MockStorage>(SCHEME);
-    EXPECT_CALL(*storage, resolve(URL)).WillOnce(testing::Return(nullptr));
+    EXPECT_CALL(*storage, resolve(URL)).Times(2).WillRepeatedly(testing::Return(nullptr));
     ASSERT_NO_THROW(resolver.add(storage));
     ASSERT_THROW(resolver.resolve(URL), filesystem_error);
 }
@@ -54,6 +54,18 @@ TEST(UrlResolverTest, can_resolve_url) {
     ASSERT_EQ(result, entry);
 }
 
+TEST(UrlResolverTest, can_resolve_url_without_scheme) {
+    UrlResolver resolver;
+    entry_ptr_t result;
+    auto storage = std::make_shared<MockStorage>(SCHEME);
+    auto entry   = storage->create(URL, STATUS);
+    ASSERT_NE(entry, nullptr);
+    EXPECT_CALL(*storage, resolve(PATH)).WillOnce(testing::Return(entry));
+    ASSERT_NO_THROW(resolver.add(storage));
+    ASSERT_NO_THROW(result = resolver.resolve(PATH));
+    ASSERT_EQ(result, entry);
+}
+
 TEST(UrlResolverTest, resolve_url_with_appropriate_storage) {
     UrlResolver resolver;
     entry_ptr_t result;
@@ -64,7 +76,7 @@ TEST(UrlResolverTest, resolve_url_with_appropriate_storage) {
     auto bad_storage  = std::make_shared<MockStorage>(bad_scheme);
     auto entry = good_storage->create(good_scheme, STATUS);
     ASSERT_NE(entry, nullptr);
-    EXPECT_CALL(*bad_storage, resolve(url)).WillOnce(testing::Return(nullptr));
+    EXPECT_CALL(*bad_storage, resolve(url)).Times(0);
     EXPECT_CALL(*good_storage, resolve(url)).WillOnce(testing::Return(entry));
     ASSERT_NO_THROW(resolver.add(bad_storage));
     ASSERT_NO_THROW(resolver.add(good_storage));

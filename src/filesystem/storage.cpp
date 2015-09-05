@@ -28,17 +28,18 @@ const std::string& Storage::scheme() const {
 
 entry_ptr_t Storage::resolve(const std::string& url) {
     std::lock_guard<std::mutex> lock{ mutex_ };
-    auto lb = entries_.lower_bound(url);
-    if (lb != entries_.end() && !entries_.key_comp()(url, lb->first)) {
+    auto path = split(url);
+    auto str = path.string();
+    auto lb = entries_.lower_bound(str);
+    if (lb != entries_.end() && !entries_.key_comp()(str, lb->first)) {
         return lb->second;
     }
-    auto path   = split(url);
     auto status = fs::status(path);
     if (!fs::exists(status)) {
         return nullptr;
     }
     auto entry = create(url, status);
-    entries_.insert(lb, entries_t::value_type{ url, entry });
+    entries_.insert(lb, entries_t::value_type{ str, entry });
     on_create_(*entry);
     return entry;
 }
