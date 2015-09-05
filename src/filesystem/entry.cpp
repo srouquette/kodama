@@ -5,7 +5,6 @@
 
 #include "filesystem/entry.h"
 #include "filesystem/exception.h"
-#include "filesystem/property.h"
 #include "filesystem/storage.h"
 
 

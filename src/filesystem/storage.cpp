@@ -6,7 +6,6 @@
 #include "filesystem/storage.h"
 #include "filesystem/entry.h"
 #include "filesystem/exception.h"
-#include "filesystem/property_status.h"
 
 namespace kodama { namespace filesystem {
 namespace fs = FILESYSTEM_NAMESPACE;
@@ -17,7 +16,7 @@ Storage::Storage(const std::string& scheme)
     , scheme_{ scheme }
     , on_create_{}
     , on_delete_{}
-    , on_content_update_{}
+    , on_update_{}
 {}
 
 Storage::~Storage()
@@ -42,18 +41,6 @@ entry_ptr_t Storage::resolve(const std::string& url) {
     entries_.insert(lb, entries_t::value_type{ url, entry });
     on_create_(*entry);
     return entry;
-}
-
-void Storage::on_create(signal_t::slot_type callback) {
-    on_create_.connect(callback);
-}
-
-void Storage::on_delete(signal_t::slot_type callback) {
-    on_delete_.connect(callback);
-}
-
-void Storage::on_content_update(signal_t::slot_type callback) {
-    on_content_update_.connect(callback);
 }
 
 entry_ptr_t Storage::create(const std::string& url, const fs::file_status& status) {

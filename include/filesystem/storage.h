@@ -6,6 +6,7 @@
 #ifndef INCLUDE_FILESYSTEM_STORAGE_H_
 #define INCLUDE_FILESYSTEM_STORAGE_H_
 
+#include "common/macro.h"
 #include "filesystem/forward_decl.h"
 #include "platform/pragma.h"
 
@@ -27,7 +28,7 @@ namespace fs = FILESYSTEM_NAMESPACE;
 class Storage : public std::enable_shared_from_this<Storage> {
  public:
     friend Entry;
-    using signal_t  = boost::signals2::signal<void (const Entry&)>;
+    using signal_t = boost::signals2::signal<void (const Entry&)>;
 
     explicit Storage(const std::string& scheme);
     Storage(const Storage&)             = default;
@@ -39,9 +40,9 @@ class Storage : public std::enable_shared_from_this<Storage> {
     const std::string& scheme() const;
     virtual entry_ptr_t resolve(const std::string& url);
 
-    void on_create(signal_t::slot_type callback);
-    void on_delete(signal_t::slot_type callback);
-    void on_content_update(signal_t::slot_type callback);
+    SIGNAL_CONNECTOR(on_create);
+    SIGNAL_CONNECTOR(on_delete);
+    SIGNAL_CONNECTOR(on_update);
 
  protected:
     virtual entry_ptr_t create(const std::string& url, const fs::file_status& status);
@@ -58,7 +59,7 @@ class Storage : public std::enable_shared_from_this<Storage> {
 
     signal_t            on_create_;
     signal_t            on_delete_;
-    signal_t            on_content_update_;
+    signal_t            on_update_;
 };
 
 }  // namespace filesystem

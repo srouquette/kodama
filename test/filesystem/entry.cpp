@@ -5,7 +5,6 @@
 
 #include "filesystem/entry.h"
 #include "filesystem/exception.h"
-#include "filesystem/property_status.h"
 #include "test/filesystem/mock/storage.h"
 #include "gmock/gmock.h"
 

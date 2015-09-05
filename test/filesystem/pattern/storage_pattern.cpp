@@ -55,11 +55,11 @@ TEST_P(StoragePattern, on_delete_signal) {
     // TODO(Syl): delete entry from teh cache
 }
 
-TEST_P(StoragePattern, on_content_update_signal) {
+TEST_P(StoragePattern, on_update_signal) {
     auto storage = GetParam().storage();
     auto path    = GetParam().create_dir(DIRNAME);
     std::string url, expected = storage->scheme() + path;
-    storage->on_content_update([&url](const Entry& entry) { url = entry.url(); });
+    storage->on_update([&url](const Entry& entry) { url = entry.url(); });
     // TODO(Syl): list directory content and update entry
 }
 
@@ -68,6 +68,7 @@ TEST_P(StoragePattern, use_cache) {
     auto path    = GetParam().create_dir(DIRNAME);
     auto url     = storage->scheme() + path;
     ASSERT_EQ(url, storage->resolve(url)->url());
+    // a second time to check the cache
     ASSERT_EQ(url, storage->resolve(url)->url());
 }
 
