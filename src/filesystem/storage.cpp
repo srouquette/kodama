@@ -77,7 +77,6 @@ std::vector<entry_ptr_t> Storage::ls(const Entry& entry) {
         throw EXCEPTION(__FUNCTION__, entry.url(), not_a_directory);
     }
     auto path = entry.path();
-    auto lock_entry = entry.shared_lock();
     std::lock_guard<std::mutex> lock{ mutex_ };
     std::vector<entry_ptr_t> content;
 #if USE_DIR_RANGE_ITERATOR

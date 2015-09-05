@@ -8,6 +8,8 @@
 #include "filesystem/exception.h"
 #include "filesystem/storage.h"
 
+#include <iostream>
+
 
 namespace kodama { namespace filesystem {
 
