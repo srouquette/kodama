@@ -119,17 +119,18 @@ TEST_P(StoragePattern, ls) {
     auto path    = GetParam().create_dir(DIRNAME);
     auto url     = storage->to_url(path);
     auto entry   = storage->resolve(url);
-    std::vector<entry_ptr_t> content{
-        storage->resolve(storage->to_url(GetParam().create_file(path / "file1"))),
-        storage->resolve(storage->to_url(GetParam().create_file(path / "file2")))
+    std::vector<std::string> content{
+        storage->to_url(GetParam().create_file(path / "file1")),
+        storage->to_url(GetParam().create_file(path / "file2"))
     };
     ASSERT_NE(entry, nullptr);
     ASSERT_TRUE(entry->is_dir());
     ASSERT_NO_THROW(entry->ls());
     ASSERT_EQ(entry->content().size(), content.size());
-    for (const auto& it : entry->content()) {
-        ASSERT_FALSE(it->is_dir());
-    }
+    ASSERT_TRUE(std::equal(content.begin(), content.end(), entry->content().begin(),
+                [](const std::string& lhs, const entry_ptr_t& rhs) {
+                    return lhs == rhs->url();
+                }));
 }
 
 }  // namespace filesystem
