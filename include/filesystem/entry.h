@@ -55,15 +55,16 @@ class Entry {
     const std::string& url() const noexcept;
 
  private:
-    storage_ptr_t lock_storage() const;
+    storage_ptr_t get_storage() const;
     void throws_if_nonexistent() const;
+    void update_status(const Storage& storage) const;
 
     signal_t                        on_update_;
 
     content_t                       content_;
     mutable std::mutex              mutex_;
     mutable boost::shared_mutex     shared_mutex_;
-    fs::file_status                 status_;
+    mutable fs::file_status         status_;
     std::weak_ptr<Storage>          storage_;
     const std::string               url_;
 };

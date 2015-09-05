@@ -93,6 +93,10 @@ std::vector<entry_ptr_t> Storage::ls(const Entry& entry) {
     return content;
 }
 
+fs::file_status Storage::status(const Entry& entry) const {
+    return fs::status(split(entry.url()));
+}
+
 fs::path Storage::split(const std::string& url) const {
     if (url.find_first_of(scheme_) == 0) {
         return url.substr(scheme_.size());

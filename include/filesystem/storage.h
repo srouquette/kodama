@@ -49,6 +49,8 @@ class Storage : public std::enable_shared_from_this<Storage> {
     virtual bool exists(const Entry& entry) const;
     virtual bool is_dir(const Entry& entry) const;
     virtual std::vector<entry_ptr_t> ls(const Entry& entry);
+    virtual fs::file_status status(const Entry& entry) const;
+
     fs::path split(const std::string& url) const;
 
  private:

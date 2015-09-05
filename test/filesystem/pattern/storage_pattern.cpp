@@ -99,9 +99,8 @@ TEST_P(StoragePattern, ls_nonexistent) {
     auto entry   = storage->resolve(url);
     ASSERT_NE(entry, nullptr);
     ASSERT_TRUE(entry->is_dir());
-    // TODO(Syl): removing dir should update status
-    // GetParam().remove(path);
-    // ASSERT_THROW(entry->ls(), filesystem_error);
+    GetParam().remove(path);
+    ASSERT_THROW(entry->ls(), filesystem_error);
 }
 
 TEST_P(StoragePattern, ls_invalid_dir) {
