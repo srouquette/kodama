@@ -8,6 +8,7 @@
 #include "filesystem/exception.h"
 #include "filesystem/storage.h"
 
+
 namespace kodama { namespace filesystem {
 
 const std::string DIRNAME{ "kodama_test_dir" };
@@ -125,11 +126,13 @@ TEST_P(StoragePattern, ls) {
     ASSERT_NE(entry, nullptr);
     ASSERT_TRUE(entry->is_dir());
     ASSERT_NO_THROW(entry->ls());
-    ASSERT_EQ(entry->content().size(), content.size());
-    ASSERT_TRUE(std::equal(content.begin(), content.end(), entry->content().begin(),
-                [](const std::string& lhs, const entry_ptr_t& rhs) {
-                    return lhs == rhs->url();
-                }));
+    auto entry_content = entry->content();
+    ASSERT_EQ(entry_content.size(), content.size());
+    ASSERT_TRUE(std::all_of(content.begin(), content.end(), [&entry_content](const std::string& origin) {
+        return std::any_of(entry_content.begin(), entry_content.end(), [&origin](const entry_ptr_t& result) {
+            return result->url() == origin;
+        });
+    }));
 }
 
 }  // namespace filesystem
