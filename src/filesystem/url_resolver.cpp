@@ -14,7 +14,7 @@ namespace fs = FILESYSTEM_NAMESPACE;
 
 void UrlResolver::add(const storage_ptr_t& storage) {
     std::lock_guard<std::mutex> lock{ mutex_ };
-    storages_.insert(std::make_pair(storage->scheme(), storage));
+    storages_.insert(storage->make_pair());
 }
 
 entry_ptr_t UrlResolver::resolve(const std::string& url) const {

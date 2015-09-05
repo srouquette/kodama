@@ -70,8 +70,23 @@ TEST(EntryTest, invalidate) {
     ASSERT_NE(entry, nullptr);
     entry->invalidate();
     EXPECT_CALL(*storage, exists(testing::Ref(*entry))).Times(0);
+    EXPECT_CALL(*storage, is_dir(testing::Ref(*entry))).Times(0);
+    EXPECT_CALL(*storage, ls(testing::Ref(*entry))).Times(0);
     ASSERT_FALSE(entry->exists());
     ASSERT_THROW(entry->is_dir(), filesystem_error);
+    ASSERT_THROW(entry->ls(), filesystem_error);
+}
+
+TEST(EntryTest, ls) {
+    auto storage = std::make_shared<MockStorage>(SCHEME);
+    auto entry   = storage->create(URL, STATUS);
+    Entry::content_t content{
+        storage->create("file1", STATUS),
+        storage->create("file2", STATUS)};
+    ASSERT_NE(entry, nullptr);
+    EXPECT_CALL(*storage, ls(testing::Ref(*entry))).WillOnce(testing::Return(content));
+    ASSERT_NO_THROW(entry->ls());
+    ASSERT_EQ(entry->content().size(), content.size());
 }
 
 }  // namespace filesystem

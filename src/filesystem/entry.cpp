@@ -15,7 +15,8 @@ Entry::Entry(const storage_ptr_t& storage,
              const std::string& url,
              const fs::file_status& status,
              const key&)
-    : mutex_{}
+    : content_{}
+    , mutex_{}
     , shared_mutex_{}
     , status_{ status }
     , storage_{ storage }
@@ -25,17 +26,9 @@ Entry::Entry(const storage_ptr_t& storage,
 Entry::~Entry()
 {}
 
-const std::string& Entry::url() const noexcept {
-    return url_;
-}
-
-bool Entry::is_dir() const {
-    std::lock_guard<std::mutex> lock{ mutex_ };
-    auto storage = storage_.lock();
-    if (!storage) {
-        throw EXCEPTION(__FUNCTION__, url_, no_such_device);
-    }
-    return storage->is_dir(*this);
+// return a copy, no need to lock
+Entry::content_t Entry::content() const {
+    return content_;
 }
 
 bool Entry::exists() const {
@@ -47,10 +40,21 @@ bool Entry::exists() const {
     return storage ? storage->exists(*this) : false;
 }
 
-void Entry::throws_if_nonexistent() const {
-    if (!exists()) {
-        throw EXCEPTION(__FUNCTION__, url_, no_such_file_or_directory);
-    }
+bool Entry::is_dir() const {
+    std::lock_guard<std::mutex> lock{ mutex_ };
+    auto storage = lock_storage();
+    return storage->is_dir(*this);
+}
+
+void Entry::invalidate() noexcept {
+    storage_.reset();
+}
+
+void Entry::ls() {
+    auto storage = lock_storage();
+    auto content = storage->ls(*this);
+    std::lock_guard<std::mutex> lock{ mutex_ };
+    std::swap(content_, content);
 }
 
 thread::shared_lock_t Entry::shared_lock() const {
@@ -65,8 +69,22 @@ thread::unique_lock_t Entry::unique_lock() const {
     return lock;
 }
 
-void Entry::invalidate() noexcept {
-    storage_.reset();
+const std::string& Entry::url() const noexcept {
+    return url_;
+}
+
+storage_ptr_t Entry::lock_storage() const {
+    auto storage = storage_.lock();
+    if (!storage) {
+        throw EXCEPTION(__FUNCTION__, url_, no_such_device);
+    }
+    return storage;
+}
+
+void Entry::throws_if_nonexistent() const {
+    if (!exists()) {
+        throw EXCEPTION(__FUNCTION__, url_, no_such_file_or_directory);
+    }
 }
 
 }  // namespace filesystem

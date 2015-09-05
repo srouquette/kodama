@@ -37,8 +37,9 @@ class Storage : public std::enable_shared_from_this<Storage> {
     Storage& operator=(Storage&&)       = default;
     virtual ~Storage();
 
-    const std::string& scheme() const;
+    std::pair<std::string, storage_ptr_t> make_pair();
     virtual entry_ptr_t resolve(const std::string& url);
+    std::string to_url(const fs::path& path) const;
 
     SIGNAL_CONNECTOR(on_create);
     SIGNAL_CONNECTOR(on_delete);
@@ -46,12 +47,16 @@ class Storage : public std::enable_shared_from_this<Storage> {
 
  protected:
     virtual entry_ptr_t create(const std::string& url, const fs::file_status& status);
-    virtual bool is_dir(const Entry& entry) const;
     virtual bool exists(const Entry& entry) const;
+    virtual bool is_dir(const Entry& entry) const;
+    virtual std::vector<entry_ptr_t> ls(const Entry& entry);
     fs::path split(const std::string& url) const;
 
  private:
     using entries_t = std::map<std::string, entry_ptr_t>;
+    using lazy_status_t = std::function<fs::file_status (const fs::path& path)>;
+
+    entry_ptr_t get_or_create(const std::string& url, lazy_status_t get_status);
 
     entries_t           entries_;
     mutable std::mutex  mutex_;

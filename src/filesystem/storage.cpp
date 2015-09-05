@@ -22,11 +22,19 @@ Storage::Storage(const std::string& scheme)
 Storage::~Storage()
 {}
 
-const std::string& Storage::scheme() const {
-    return scheme_;
+std::pair<std::string, storage_ptr_t> Storage::make_pair() {
+    return std::make_pair(scheme_, shared_from_this());
 }
 
 entry_ptr_t Storage::resolve(const std::string& url) {
+    return get_or_create(url, [](const fs::path& path) { return fs::status(path); });
+}
+
+std::string Storage::to_url(const fs::path& path) const {
+    return scheme_ + path.string();
+}
+
+entry_ptr_t Storage::get_or_create(const std::string& url, lazy_status_t get_status) {
     std::lock_guard<std::mutex> lock{ mutex_ };
     auto path = split(url);
     auto str = path.string();
@@ -34,26 +42,46 @@ entry_ptr_t Storage::resolve(const std::string& url) {
     if (lb != entries_.end() && !entries_.key_comp()(str, lb->first)) {
         return lb->second;
     }
-    auto status = fs::status(path);
+    auto status = get_status(path);
     if (!fs::exists(status)) {
         return nullptr;
     }
-    auto entry = create(url, status);
+    auto entry = create(to_url(path), status);
     entries_.insert(lb, entries_t::value_type{ str, entry });
-    on_create_(*entry);
     return entry;
 }
 
 entry_ptr_t Storage::create(const std::string& url, const fs::file_status& status) {
-    return std::make_shared<Entry>(shared_from_this(), url, status, Entry::key{});
+    auto entry = std::make_shared<Entry>(shared_from_this(), url, status, Entry::key{});
+    on_create_(*entry);
+    return entry;
+}
+
+bool Storage::exists(const Entry& entry) const {
+    return fs::exists(entry.status_);
 }
 
 bool Storage::is_dir(const Entry& entry) const {
     return fs::is_directory(entry.status_);
 }
 
-bool Storage::exists(const Entry& entry) const {
-    return fs::exists(entry.status_);
+std::vector<entry_ptr_t> Storage::ls(const Entry& entry) {
+    if (!exists(entry)) {
+        throw EXCEPTION(__FUNCTION__, entry.url(), no_such_file_or_directory);
+    }
+    if (!is_dir(entry)) {
+        throw EXCEPTION(__FUNCTION__, entry.url(), not_a_directory);
+    }
+    auto path = split(entry.url());
+    auto lock = entry.shared_lock();
+    std::vector<entry_ptr_t> content;
+    for (const auto& dir_entry : fs::directory_iterator(path)) {
+        content.push_back(get_or_create(to_url(dir_entry.path()),
+                                        [&dir_entry](const fs::path&) {
+                                            return dir_entry.status();
+                                        }));
+    }
+    return content;
 }
 
 fs::path Storage::split(const std::string& url) const {

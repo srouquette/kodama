@@ -12,6 +12,7 @@
 
 #include <mutex>  // NOLINT
 #include <string>
+#include <vector>
 
 
 namespace kodama { namespace filesystem {
@@ -19,6 +20,8 @@ namespace fs = FILESYSTEM_NAMESPACE;
 
 class Entry {
  public:
+    using content_t = std::vector<entry_ptr_t>;
+
     friend class Storage;
     class key {
         friend class Storage;
@@ -36,16 +39,20 @@ class Entry {
     Entry& operator=(Entry&&)       = default;
     ~Entry();
 
-    const std::string& url() const noexcept;
-    bool is_dir() const;
+    content_t content() const;
     bool exists() const;
+    bool is_dir() const;
+    void invalidate() noexcept;
+    void ls();
     thread::shared_lock_t shared_lock() const;
     thread::unique_lock_t unique_lock() const;
-    void invalidate() noexcept;
+    const std::string& url() const noexcept;
 
  private:
+    storage_ptr_t lock_storage() const;
     void throws_if_nonexistent() const;
 
+    content_t                       content_;
     mutable std::mutex              mutex_;
     mutable boost::shared_mutex     shared_mutex_;
     fs::file_status                 status_;
