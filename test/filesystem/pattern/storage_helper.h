@@ -33,7 +33,7 @@ class StorageHelper {
     virtual void remove(const fs::path& path) const;
 
  private:
-    mutable std::set<fs::path>   entries_;
+    mutable std::set<fs::path>  entries_;
 };
 
 }  // namespace filesystem
