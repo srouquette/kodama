@@ -31,6 +31,7 @@ class MockStorage : public Storage {
     MOCK_CONST_METHOD1(is_dir, bool (const Entry& entry));
     MOCK_CONST_METHOD1(exists, bool (const Entry& entry));
     MOCK_METHOD1(ls, std::vector<entry_ptr_t> (const Entry& entry));
+    MOCK_CONST_METHOD1(status, fs::file_status (const Entry& entry));
 };
 
 }  // namespace filesystem

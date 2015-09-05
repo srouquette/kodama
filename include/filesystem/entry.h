@@ -34,6 +34,7 @@ class Entry {
 
     Entry(const storage_ptr_t& storage,
           const std::string& url,
+          const fs::path& path,
           const fs::file_status& status,
           const key&);
 
@@ -50,6 +51,7 @@ class Entry {
     bool is_dir() const;
     void invalidate() noexcept;
     void ls();
+    const fs::path& path() const;
     thread::shared_lock_t shared_lock() const;
     thread::unique_lock_t unique_lock() const;
     const std::string& url() const noexcept;
@@ -63,6 +65,7 @@ class Entry {
 
     content_t                       content_;
     mutable std::mutex              mutex_;
+    const fs::path                  path_;
     mutable boost::shared_mutex     shared_mutex_;
     mutable fs::file_status         status_;
     std::weak_ptr<Storage>          storage_;

@@ -45,7 +45,7 @@ class Storage : public std::enable_shared_from_this<Storage> {
     std::string to_url(const fs::path& path) const;
 
  protected:
-    virtual entry_ptr_t create(const std::string& url, const fs::file_status& status);
+    virtual entry_ptr_t create(const fs::path& path, const fs::file_status& status);
     virtual bool exists(const Entry& entry) const;
     virtual bool is_dir(const Entry& entry) const;
     virtual std::vector<entry_ptr_t> ls(const Entry& entry);
@@ -57,7 +57,7 @@ class Storage : public std::enable_shared_from_this<Storage> {
     using entries_t = std::map<std::string, entry_ptr_t>;
     using lazy_status_t = std::function<fs::file_status (const fs::path& path)>;
 
-    entry_ptr_t get_or_create(const std::string& url, lazy_status_t get_status);
+    entry_ptr_t get_or_create(const fs::path& path, lazy_status_t get_status);
 
     signal_t            on_create_;
     signal_t            on_delete_;

@@ -32,16 +32,15 @@ std::pair<std::string, storage_ptr_t> Storage::make_pair() {
 }
 
 entry_ptr_t Storage::resolve(const std::string& url) {
-    return get_or_create(url, [](const fs::path& path) { return fs::status(path); });
+    std::lock_guard<std::mutex> lock{ mutex_ };
+    return get_or_create(split(url), [](const fs::path& path) { return fs::status(path); });
 }
 
 std::string Storage::to_url(const fs::path& path) const {
     return scheme_ + path.string();
 }
 
-entry_ptr_t Storage::get_or_create(const std::string& url, lazy_status_t get_status) {
-    std::lock_guard<std::mutex> lock{ mutex_ };
-    auto path = split(url);
+entry_ptr_t Storage::get_or_create(const fs::path& path, lazy_status_t get_status) {
     auto str = path.string();
     auto lb = entries_.lower_bound(str);
     if (lb != entries_.end() && !entries_.key_comp()(str, lb->first)) {
@@ -51,13 +50,13 @@ entry_ptr_t Storage::get_or_create(const std::string& url, lazy_status_t get_sta
     if (!fs::exists(status)) {
         return nullptr;
     }
-    auto entry = create(to_url(path), status);
+    auto entry = create(path, status);
     entries_.insert(lb, entries_t::value_type{ str, entry });
     return entry;
 }
 
-entry_ptr_t Storage::create(const std::string& url, const fs::file_status& status) {
-    auto entry = std::make_shared<Entry>(shared_from_this(), url, status, Entry::key{});
+entry_ptr_t Storage::create(const fs::path& path, const fs::file_status& status) {
+    auto entry = std::make_shared<Entry>(shared_from_this(), to_url(path), path, status, Entry::key{});
     on_create_(*entry);
     return entry;
 }
@@ -77,18 +76,20 @@ std::vector<entry_ptr_t> Storage::ls(const Entry& entry) {
     if (!is_dir(entry)) {
         throw EXCEPTION(__FUNCTION__, entry.url(), not_a_directory);
     }
-    auto path = split(entry.url());
-    auto lock = entry.shared_lock();
+    auto path = entry.path();
+    auto lock_entry = entry.shared_lock();
+    std::lock_guard<std::mutex> lock{ mutex_ };
     std::vector<entry_ptr_t> content;
 #if USE_DIR_RANGE_ITERATOR
     for (const auto& dir_entry : fs::directory_iterator(path)) {
 #else
     for (const auto& dir_entry : boost::make_iterator_range(fs::directory_iterator(path), fs::directory_iterator())) {
 #endif
-        content.push_back(get_or_create(to_url(dir_entry.path()),
-                                        [&dir_entry](const fs::path&) {
-                                            return dir_entry.status();
-                                        }));
+        content.push_back(
+            get_or_create(dir_entry.path(),
+                          [&dir_entry](const fs::path&) {
+                            return dir_entry.status();
+                          }));
     }
     return content;
 }

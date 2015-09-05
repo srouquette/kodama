@@ -15,11 +15,13 @@ namespace fs = FILESYSTEM_NAMESPACE;
 
 Entry::Entry(const storage_ptr_t& storage,
              const std::string& url,
+             const fs::path& path,
              const fs::file_status& status,
              const key&)
     : on_update_{}
     , content_{}
     , mutex_{}
+    , path_{ path }
     , shared_mutex_{}
     , status_{ status }
     , storage_{ storage }
@@ -29,8 +31,8 @@ Entry::Entry(const storage_ptr_t& storage,
 Entry::~Entry()
 {}
 
-// return a copy, no need to lock
 Entry::content_t Entry::content() const {
+    std::lock_guard<std::mutex> lock{ mutex_ };
     return content_;
 }
 
@@ -59,6 +61,10 @@ void Entry::ls() {
     std::lock_guard<std::mutex> lock{ mutex_ };
     std::swap(content_, content);
     on_update_(*this);
+}
+
+const fs::path& Entry::path() const {
+    return path_;
 }
 
 thread::shared_lock_t Entry::shared_lock() const {
