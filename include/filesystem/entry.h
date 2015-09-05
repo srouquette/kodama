@@ -57,6 +57,7 @@ class Entry {
     const std::string& url() const noexcept;
 
  private:
+    storage_ptr_t storage() const;
     void throws_if_nonexistent() const;
     void throws_if_storage_null() const;
     void safe_update_status() const;
@@ -69,7 +70,7 @@ class Entry {
     const fs::path                  path_;
     mutable boost::shared_mutex     shared_mutex_;
     mutable fs::file_status         status_;
-    storage_ptr_t                   storage_;
+    std::weak_ptr<Storage>          storage_;  // weak_ptr to prevent circular ref
     const std::string               url_;
 };
 

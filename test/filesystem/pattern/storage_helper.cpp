@@ -46,7 +46,7 @@ void StorageHelper::remove(const fs::path& path) const {
     entries_.erase(path);
     try {
         fs::remove_all(path);
-    } catch (const std::exception& e) {}
+    } catch (...) {}
 }
 
 }  // namespace filesystem

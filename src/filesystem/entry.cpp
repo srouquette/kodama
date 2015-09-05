@@ -39,8 +39,7 @@ Entry::content_t Entry::content() const {
 bool Entry::exists() const {
     std::lock_guard<std::mutex> lock{ mutex_ };
     try {
-        throws_if_storage_null();
-        return storage_->exists(*this);
+        return storage()->exists(*this);
     } catch (const filesystem_error&) {
         return false;
     }
@@ -48,8 +47,7 @@ bool Entry::exists() const {
 
 bool Entry::is_dir() const {
     std::lock_guard<std::mutex> lock{ mutex_ };
-    throws_if_storage_null();
-    return storage_->is_dir(*this);
+    return storage()->is_dir(*this);
 }
 
 void Entry::invalidate() noexcept {
@@ -58,7 +56,7 @@ void Entry::invalidate() noexcept {
 
 void Entry::ls() {
     safe_update_status();
-    auto content = storage_->ls(*this);
+    auto content = storage()->ls(*this);
     std::lock_guard<std::mutex> lock{ mutex_ };
     std::swap(content_, content);
     on_update_(*this);
@@ -84,16 +82,17 @@ const std::string& Entry::url() const noexcept {
     return url_;
 }
 
-void Entry::throws_if_nonexistent() const {
-    update_status();
-    if (!storage_->exists(*this)) {
-        throw EXCEPTION(__FUNCTION__, url_, no_such_file_or_directory);
+storage_ptr_t Entry::storage() const {
+    if (storage_.expired()) {
+        throw EXCEPTION(__FUNCTION__, url_, no_such_device);
     }
+    return storage_.lock();
 }
 
-void Entry::throws_if_storage_null() const {
-    if (!storage_) {
-        throw EXCEPTION(__FUNCTION__, url_, no_such_device);
+void Entry::throws_if_nonexistent() const {
+    update_status();
+    if (!storage()->exists(*this)) {
+        throw EXCEPTION(__FUNCTION__, url_, no_such_file_or_directory);
     }
 }
 
@@ -103,8 +102,7 @@ void Entry::safe_update_status() const {
 }
 
 void Entry::update_status() const {
-    throws_if_storage_null();
-    status_ = storage_->status(*this);
+    status_ = storage()->status(*this);
 }
 
 }  // namespace filesystem
