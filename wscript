@@ -87,4 +87,4 @@ def build(bld):
                                         src/app/*
                                         res/{platform}.rc
                                         '''.format(**bld.env)),
-        use         = 'BOOST GCOV kodama_filesystem')
+        use         = 'BOOST kodama_filesystem')

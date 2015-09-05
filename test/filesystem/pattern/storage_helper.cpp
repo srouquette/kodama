@@ -7,6 +7,8 @@
 #include "filesystem/storage.h"
 
 #include <fstream>  // NOLINT
+#include <iostream>
+#include <random>
 
 
 namespace kodama { namespace filesystem {
@@ -15,7 +17,7 @@ namespace fs = FILESYSTEM_NAMESPACE;
 StorageHelper::~StorageHelper() noexcept {
     for (const auto& path : entries_) {
         try {
-            fs::remove(path);
+            fs::remove_all(path);
         } catch (...) {}
     }
 }
@@ -28,22 +30,23 @@ bool StorageHelper::can_work_without_scheme() const {
     return true;
 }
 
-std::string StorageHelper::create_dir(std::string path) const {
-    if (fs::exists(path)) {
-        return path;
-    }
+fs::path StorageHelper::create_dir(fs::path path) const {
     fs::create_directory(path);
     entries_.insert(path);
     return path;
 }
 
-std::string StorageHelper::create_file(std::string path) const {
-    if (fs::exists(path)) {
-        return path;
-    }
-    std::ofstream{ path };
+fs::path StorageHelper::create_file(fs::path path) const {
+    std::ofstream{ path.string() };
     entries_.insert(path);
     return path;
+}
+
+void StorageHelper::remove(const fs::path& path) const {
+    entries_.erase(path);
+    try {
+        fs::remove_all(path);
+    } catch (...) {}
 }
 
 }  // namespace filesystem

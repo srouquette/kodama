@@ -8,22 +8,27 @@
 #include "test/filesystem/mock/storage.h"
 #include "gmock/gmock.h"
 
+#include <iostream>
+
 namespace kodama { namespace filesystem {
 namespace fs = FILESYSTEM_NAMESPACE;
 
 const std::string SCHEME{ "mock://" };
-const std::string URL = SCHEME + "path";
+const fs::path PATH{ "path" };
+const std::string URL = SCHEME + PATH.string();
 const fs::file_status STATUS;
 
-TEST(EntryTest, url) {
+TEST(EntryTest, same_url) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
-    auto entry = storage->make(URL, STATUS);
+    auto entry   = storage->create(PATH, STATUS);
+    ASSERT_NE(entry, nullptr);
     ASSERT_EQ(entry->url(), URL);
 }
 
 TEST(EntryTest, is_dir) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
-    auto entry = storage->make(URL, STATUS);
+    auto entry   = storage->create(PATH, STATUS);
+    ASSERT_NE(entry, nullptr);
     EXPECT_CALL(*storage, is_dir(testing::Ref(*entry))).WillOnce(testing::Return(false));
     ASSERT_FALSE(entry->is_dir());
     EXPECT_CALL(*storage, is_dir(testing::Ref(*entry))).WillOnce(testing::Return(true));
@@ -32,20 +37,60 @@ TEST(EntryTest, is_dir) {
 
 TEST(EntryTest, exists) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
-    auto entry = storage->make(URL, STATUS);
+    auto entry   = storage->create(PATH, STATUS);
+    ASSERT_NE(entry, nullptr);
     EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(false));
     ASSERT_FALSE(entry->exists());
     EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(true));
     ASSERT_TRUE(entry->exists());
 }
 
+TEST(EntryTest, shared_lock) {
+    auto storage = std::make_shared<MockStorage>(SCHEME);
+    auto entry   = storage->create(PATH, STATUS);
+    ASSERT_NE(entry, nullptr);
+    EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(false));
+    ASSERT_THROW(entry->shared_lock(), filesystem_error);
+    EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(true));
+    ASSERT_NO_THROW(entry->shared_lock());
+}
+
+TEST(EntryTest, unique_lock) {
+    auto storage = std::make_shared<MockStorage>(SCHEME);
+    auto entry   = storage->create(PATH, STATUS);
+    ASSERT_NE(entry, nullptr);
+    EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(false));
+    ASSERT_THROW(entry->unique_lock(), filesystem_error);
+    EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(true));
+    ASSERT_NO_THROW(entry->unique_lock());
+}
+
 TEST(EntryTest, invalidate) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
-    auto entry = storage->make(URL, STATUS);
+    auto entry   = storage->create(PATH, STATUS);
+    ASSERT_NE(entry, nullptr);
     entry->invalidate();
     EXPECT_CALL(*storage, exists(testing::Ref(*entry))).Times(0);
-    EXPECT_FALSE(entry->exists());
-    EXPECT_THROW(entry->is_dir(), filesystem_error);
+    EXPECT_CALL(*storage, is_dir(testing::Ref(*entry))).Times(0);
+    EXPECT_CALL(*storage, ls(testing::Ref(*entry))).Times(0);
+    ASSERT_FALSE(entry->exists());
+    ASSERT_THROW(entry->is_dir(), filesystem_error);
+    ASSERT_THROW(entry->ls(), filesystem_error);
+}
+
+TEST(EntryTest, ls) {
+    auto storage = std::make_shared<MockStorage>(SCHEME);
+    auto entry   = storage->create(PATH, STATUS);
+    std::string url;
+    Entry::content_t content{
+        storage->create("file1", STATUS),
+        storage->create("file2", STATUS)};
+    ASSERT_NE(entry, nullptr);
+    EXPECT_CALL(*storage, ls(testing::Ref(*entry))).WillOnce(testing::Return(content));
+    entry->on_update([&url](const Entry& entry) { url = entry.url(); });
+    ASSERT_NO_THROW(entry->ls());
+    ASSERT_EQ(entry->content().size(), content.size());
+    ASSERT_EQ(entry->url(), url);
 }
 
 }  // namespace filesystem

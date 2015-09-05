@@ -6,7 +6,10 @@
 #ifndef INCLUDE_FILESYSTEM_URL_RESOLVER_H_
 #define INCLUDE_FILESYSTEM_URL_RESOLVER_H_
 
+#include "common/macro.h"
 #include "filesystem/forward_decl.h"
+
+#include <boost/signals2.hpp>
 
 #include <map>
 #include <string>
@@ -17,12 +20,18 @@ namespace kodama { namespace filesystem {
 
 class UrlResolver {
  public:
+    using signal_t = boost::signals2::signal<void (const Storage&)>;
+
     void add(const storage_ptr_t& storage);
     entry_ptr_t resolve(const std::string& url) const;
+
+    SIGNAL_CONNECTOR(on_add);
 
  private:
     std::map<std::string, storage_ptr_t>  storages_;
     mutable std::mutex mutex_;
+
+    signal_t on_add_;
 };
 
 }  // namespace filesystem

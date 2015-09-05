@@ -39,7 +39,7 @@ const char* filesystem_error::what() const noexcept {
         if (impl_->what_.empty()) {
             impl_->what_ = std::system_error::what();
             if (!impl_->path1_.empty()) {
-                impl_->what_ += impl_->path1_.string();
+                impl_->what_ += " " + impl_->path1_.string();
             }
         }
         return impl_->what_.c_str();

@@ -14,12 +14,21 @@ namespace fs = FILESYSTEM_NAMESPACE;
 
 void UrlResolver::add(const storage_ptr_t& storage) {
     std::lock_guard<std::mutex> lock{ mutex_ };
-    storages_.emplace(storage->scheme(), storage);
+    storages_.insert(storage->make_pair());
 }
 
 entry_ptr_t UrlResolver::resolve(const std::string& url) const {
     std::lock_guard<std::mutex> lock{ mutex_ };
     entry_ptr_t entry;
+    // try to resolve first based on the scheme
+    for (const auto& storage : storages_) {
+        if (url.find_first_of(storage.first) == 0) {
+            if (entry = storage.second->resolve(url)) {
+                return entry;
+            }
+            break;
+        }
+    }
     for (const auto& storage : storages_) {
         if (entry = storage.second->resolve(url)) {
             return entry;

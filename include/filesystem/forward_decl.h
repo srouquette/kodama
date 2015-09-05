@@ -10,11 +10,13 @@
 
 
 namespace kodama { namespace filesystem {
-class Storage;
 class Entry;
+class Property;
+class Storage;
 
-using storage_ptr_t = std::shared_ptr<Storage>;
-using entry_ptr_t   = std::shared_ptr<Entry>;
+using entry_ptr_t       = std::shared_ptr<Entry>;
+using property_ptr_t    = std::unique_ptr<Property>;
+using storage_ptr_t     = std::shared_ptr<Storage>;
 
 }  // namespace filesystem
 }  // namespace kodama

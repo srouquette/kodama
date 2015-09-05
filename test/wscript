@@ -11,7 +11,10 @@ def gtest_results(bld):
     for (f, code, out, err) in lst:
         if not code:
             continue
-        output = str(out, 'utf-8').split('\n')
+        try:
+            output = str(out, 'utf-8').split('\n')
+        except:
+            output = str(out).split('\n')  # py2
         for i, line in enumerate(output):
             if '[ RUN      ]' in line:
                 i += 1

@@ -4,8 +4,12 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "test/filesystem/pattern/storage_pattern.h"
-#include "filesystem/storage.h"
 #include "filesystem/entry.h"
+#include "filesystem/exception.h"
+#include "filesystem/storage.h"
+
+#include <iostream>
+
 
 namespace kodama { namespace filesystem {
 
@@ -15,41 +19,64 @@ const std::string FILENAME{ "kodama_test_file" };
 TEST_P(StoragePattern, resolve_without_scheme) {
     auto storage = GetParam().storage();
     auto path    = GetParam().create_dir(DIRNAME);
+    auto url     = storage->to_url(path);
     if (GetParam().can_work_without_scheme()) {
-        ASSERT_NE(nullptr, storage->resolve(path));
+        ASSERT_NE(nullptr, storage->resolve(path.string()));
     } else {
-        ASSERT_EQ(nullptr, storage->resolve(path));
+        ASSERT_EQ(nullptr, storage->resolve(url));
     }
 }
 
 TEST_P(StoragePattern, resolve_valid_path) {
     auto storage = GetParam().storage();
     auto path    = GetParam().create_dir(DIRNAME);
-    ASSERT_NE(nullptr, storage->resolve(storage->scheme() + path));
+    auto url     = storage->to_url(path);
+    ASSERT_NE(nullptr, storage->resolve(url));
 }
 
 TEST_P(StoragePattern, resolve_valid_path_then_check_entry) {
     auto storage = GetParam().storage();
     auto path    = GetParam().create_dir(DIRNAME);
-    auto url     = storage->scheme() + path;
+    auto url     = storage->to_url(path);
     auto entry   = storage->resolve(url);
     ASSERT_NE(entry, nullptr);
     ASSERT_EQ(entry->url(), url);
     ASSERT_TRUE(entry->exists());
 }
 
+TEST_P(StoragePattern, on_create_signal) {
+    auto storage  = GetParam().storage();
+    auto path     = GetParam().create_dir(DIRNAME);
+    auto expected = storage->to_url(path);
+    std::string url;
+    storage->on_create([&url](const Entry& entry) { url = entry.url(); });
+    ASSERT_NE(nullptr, storage->resolve(expected));
+    ASSERT_EQ(url, expected);
+}
+
+TEST_P(StoragePattern, on_delete_signal) {
+    auto storage  = GetParam().storage();
+    auto path     = GetParam().create_dir(DIRNAME);
+    auto expected = storage->to_url(path);
+    std::string url;
+    storage->on_delete([&url](const Entry& entry) { url = entry.url(); });
+    // TODO(Syl): delete entry from the cache
+}
+
 TEST_P(StoragePattern, use_cache) {
     auto storage = GetParam().storage();
     auto path    = GetParam().create_dir(DIRNAME);
-    auto url     = storage->scheme() + path;
+    auto url     = storage->to_url(path);
     ASSERT_EQ(url, storage->resolve(url)->url());
+    // a second time to check the cache
     ASSERT_EQ(url, storage->resolve(url)->url());
 }
 
 TEST_P(StoragePattern, check_is_dir) {
     auto storage = GetParam().storage();
     auto path    = GetParam().create_dir(DIRNAME);
-    auto entry   = storage->resolve(storage->scheme() + path);
+    auto url     = storage->to_url(path);
+    auto entry   = storage->resolve(url);
     ASSERT_NE(entry, nullptr);
     ASSERT_TRUE(entry->is_dir());
 }
@@ -57,7 +84,8 @@ TEST_P(StoragePattern, check_is_dir) {
 TEST_P(StoragePattern, check_is_file) {
     auto storage = GetParam().storage();
     auto path    = GetParam().create_file(FILENAME);
-    auto entry   = storage->resolve(storage->scheme() + path);
+    auto url     = storage->to_url(path);
+    auto entry   = storage->resolve(url);
     ASSERT_NE(entry, nullptr);
     ASSERT_FALSE(entry->is_dir());
 }
@@ -65,6 +93,48 @@ TEST_P(StoragePattern, check_is_file) {
 TEST_P(StoragePattern, resolve_invalid_path) {
     auto storage = GetParam().storage();
     ASSERT_EQ(nullptr, storage->resolve("/invalid_path"));
+}
+
+TEST_P(StoragePattern, ls_nonexistent) {
+    auto storage = GetParam().storage();
+    auto path    = GetParam().create_dir(DIRNAME);
+    auto url     = storage->to_url(path);
+    auto entry   = storage->resolve(url);
+    ASSERT_NE(entry, nullptr);
+    ASSERT_TRUE(entry->is_dir());
+    GetParam().remove(path);
+    ASSERT_THROW(entry->ls(), filesystem_error);
+}
+
+TEST_P(StoragePattern, ls_invalid_dir) {
+    auto storage = GetParam().storage();
+    auto path    = GetParam().create_file(FILENAME);
+    auto url     = storage->to_url(path);
+    auto entry   = storage->resolve(url);
+    ASSERT_NE(entry, nullptr);
+    ASSERT_FALSE(entry->is_dir());
+    ASSERT_THROW(entry->ls(), filesystem_error);
+}
+
+TEST_P(StoragePattern, ls) {
+    auto storage = GetParam().storage();
+    auto path    = GetParam().create_dir(DIRNAME);
+    auto url     = storage->to_url(path);
+    auto entry   = storage->resolve(url);
+    std::vector<std::string> content{
+        storage->to_url(GetParam().create_file(path / "file1")),
+        storage->to_url(GetParam().create_file(path / "file2"))
+    };
+    ASSERT_NE(entry, nullptr);
+    ASSERT_TRUE(entry->is_dir());
+    ASSERT_NO_THROW(entry->ls());
+    auto entry_content = entry->content();
+    ASSERT_EQ(entry_content.size(), content.size());
+    ASSERT_TRUE(std::all_of(content.begin(), content.end(), [&entry_content](const std::string& origin) {
+        return std::any_of(entry_content.begin(), entry_content.end(), [&origin](const entry_ptr_t& result) {
+            return result->url() == origin;
+        });
+    }));
 }
 
 }  // namespace filesystem

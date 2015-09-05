@@ -28,11 +28,12 @@ class StorageHelper {
 
     virtual storage_ptr_t storage() const;
     virtual bool can_work_without_scheme() const;
-    virtual std::string create_dir(std::string path) const;
-    virtual std::string create_file(std::string path) const;
+    virtual fs::path create_dir(fs::path path) const;
+    virtual fs::path create_file(fs::path path) const;
+    virtual void remove(const fs::path& path) const;
 
  private:
-    mutable std::set<std::string>   entries_;
+    mutable std::set<fs::path>  entries_;
 };
 
 }  // namespace filesystem

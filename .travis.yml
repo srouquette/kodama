@@ -4,8 +4,6 @@ language: cpp
 
 cache:
   apt: true
-  directories:
-    - .build
 
 addons:
   apt:
@@ -20,10 +18,6 @@ addons:
 compiler:
   - g++
 
-# env:
-#   - WAF_BUILD=build_release
-#   - WAF_BUILD=build_debug
-
 install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9"; fi
   - pip install cpp-coveralls --user `whoami`
@@ -35,9 +29,7 @@ script:
 
 after_success:
   - coveralls --gcov "gcov-4.9" --exclude test --exclude googletest --root . --build-root ".build/debug" --gcov-options '\-lp'
+  - find .build/debug -type f
 
 after_failure:
   - cat ./.build/config.log
-
-# notifications:
-#   email: false
