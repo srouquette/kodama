@@ -7,6 +7,7 @@
 #include "filesystem/storage.h"
 
 #include <fstream>  // NOLINT
+#include <iostream>
 #include <random>
 
 
@@ -16,7 +17,7 @@ namespace fs = FILESYSTEM_NAMESPACE;
 StorageHelper::~StorageHelper() noexcept {
     for (const auto& path : entries_) {
         try {
-            fs::remove(path);
+            fs::remove_all(path);
         } catch (...) {}
     }
 }
@@ -30,18 +31,12 @@ bool StorageHelper::can_work_without_scheme() const {
 }
 
 fs::path StorageHelper::create_dir(fs::path path) const {
-    if (fs::exists(path)) {
-        return path;
-    }
     fs::create_directory(path);
     entries_.insert(path);
     return path;
 }
 
 fs::path StorageHelper::create_file(fs::path path) const {
-    if (fs::exists(path)) {
-        return path;
-    }
     std::ofstream{ path.string() };
     entries_.insert(path);
     return path;
@@ -50,7 +45,7 @@ fs::path StorageHelper::create_file(fs::path path) const {
 void StorageHelper::remove(const fs::path& path) const {
     entries_.erase(path);
     try {
-        fs::remove(path);
+        fs::remove_all(path);
     } catch (...) {}
 }
 
