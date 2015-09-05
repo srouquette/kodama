@@ -6,20 +6,27 @@
 #ifndef INCLUDE_FILESYSTEM_ENTRY_H_
 #define INCLUDE_FILESYSTEM_ENTRY_H_
 
+#include "common/macro.h"
 #include "filesystem/forward_decl.h"
+#include "filesystem/namespace.h"
 #include "thread/lock.h"
+
+#include <boost/signals2.hpp>
 
 #include <mutex>  // NOLINT
 #include <string>
-#include <typeindex>
-#include <unordered_map>
+#include <vector>
 
 
 namespace kodama { namespace filesystem {
+namespace fs = FILESYSTEM_NAMESPACE;
 
 class Entry {
  public:
-    friend Storage;
+    using content_t = std::vector<entry_ptr_t>;
+    using signal_t  = boost::signals2::signal<void (const Entry&)>;
+
+    friend class Storage;
     class key {
         friend class Storage;
         key() {}
@@ -27,6 +34,7 @@ class Entry {
 
     Entry(const storage_ptr_t& storage,
           const std::string& url,
+          const fs::file_status& status,
           const key&);
 
     Entry(const Entry&)             = default;
@@ -35,35 +43,30 @@ class Entry {
     Entry& operator=(Entry&&)       = default;
     ~Entry();
 
-    const std::string& url() const noexcept;
-    bool is_dir() const;
+    SIGNAL_CONNECTOR(on_update);
+
+    content_t content() const;
     bool exists() const;
+    bool is_dir() const;
+    void invalidate() noexcept;
+    void ls();
     thread::shared_lock_t shared_lock() const;
     thread::unique_lock_t unique_lock() const;
-    void throws_if_nonexistent() const;
-    void invalidate() noexcept;
-
-    void set_property(property_ptr_t&& property);
-
-    template<typename T>
-    const T& get_property() const;
+    const std::string& url() const noexcept;
 
  private:
-    using property_map_t = std::unordered_map<std::type_index, property_ptr_t>;
+    storage_ptr_t lock_storage() const;
+    void throws_if_nonexistent() const;
+
+    signal_t                        on_update_;
+
+    content_t                       content_;
     mutable std::mutex              mutex_;
     mutable boost::shared_mutex     shared_mutex_;
+    fs::file_status                 status_;
     std::weak_ptr<Storage>          storage_;
     const std::string               url_;
-    property_map_t                  properties_;
 };
-
-// templates
-
-template<typename T>
-const T& Entry::get_property() const {
-    return *dynamic_cast<T*>(properties_.at(std::type_index{ typeid(T) }).get());
-}
-
 
 }  // namespace filesystem
 }  // namespace kodama
