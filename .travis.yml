@@ -29,6 +29,7 @@ script:
 
 after_success:
   - coveralls --gcov "gcov-4.9" --exclude test --exclude googletest --root . --build-root ".build/debug" --gcov-options '\-lp'
+  - find .build/debug -type f
 
 after_failure:
   - cat ./.build/config.log
