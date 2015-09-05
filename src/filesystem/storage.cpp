@@ -7,16 +7,21 @@
 #include "filesystem/entry.h"
 #include "filesystem/exception.h"
 
+#define USE_DIR_RANGE_ITERATOR       (MSC_VER_ >= 1900 || BOOST_VERSION >= 105900)
+
+#if !USE_DIR_RANGE_ITERATOR
+#include <boost/range/iterator_range_core.hpp>
+#endif
+
 namespace kodama { namespace filesystem {
 namespace fs = FILESYSTEM_NAMESPACE;
 
 Storage::Storage(const std::string& scheme)
-    : entries_{}
+    : on_create_{}
+    , on_delete_{}
+    , entries_{}
     , mutex_{}
     , scheme_{ scheme }
-    , on_create_{}
-    , on_delete_{}
-    , on_update_{}
 {}
 
 Storage::~Storage()
@@ -75,7 +80,11 @@ std::vector<entry_ptr_t> Storage::ls(const Entry& entry) {
     auto path = split(entry.url());
     auto lock = entry.shared_lock();
     std::vector<entry_ptr_t> content;
+#if USE_DIR_RANGE_ITERATOR
     for (const auto& dir_entry : fs::directory_iterator(path)) {
+#else
+    for (const auto& dir_entry : boost::make_iterator_range(fs::directory_iterator(path), fs::directory_iterator())) {
+#endif
         content.push_back(get_or_create(to_url(dir_entry.path()),
                                         [&dir_entry](const fs::path&) {
                                             return dir_entry.status();

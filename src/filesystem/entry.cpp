@@ -7,6 +7,8 @@
 #include "filesystem/exception.h"
 #include "filesystem/storage.h"
 
+#include <boost/signals2.hpp>
+
 
 namespace kodama { namespace filesystem {
 namespace fs = FILESYSTEM_NAMESPACE;
@@ -15,7 +17,8 @@ Entry::Entry(const storage_ptr_t& storage,
              const std::string& url,
              const fs::file_status& status,
              const key&)
-    : content_{}
+    : on_update_{}
+    , content_{}
     , mutex_{}
     , shared_mutex_{}
     , status_{ status }
@@ -55,6 +58,7 @@ void Entry::ls() {
     auto content = storage->ls(*this);
     std::lock_guard<std::mutex> lock{ mutex_ };
     std::swap(content_, content);
+    on_update_(*this);
 }
 
 thread::shared_lock_t Entry::shared_lock() const {

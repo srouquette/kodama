@@ -6,9 +6,12 @@
 #ifndef INCLUDE_FILESYSTEM_ENTRY_H_
 #define INCLUDE_FILESYSTEM_ENTRY_H_
 
+#include "common/macro.h"
 #include "filesystem/forward_decl.h"
 #include "filesystem/namespace.h"
 #include "thread/lock.h"
+
+#include <boost/signals2.hpp>
 
 #include <mutex>  // NOLINT
 #include <string>
@@ -21,6 +24,7 @@ namespace fs = FILESYSTEM_NAMESPACE;
 class Entry {
  public:
     using content_t = std::vector<entry_ptr_t>;
+    using signal_t  = boost::signals2::signal<void (const Entry&)>;
 
     friend class Storage;
     class key {
@@ -39,6 +43,8 @@ class Entry {
     Entry& operator=(Entry&&)       = default;
     ~Entry();
 
+    SIGNAL_CONNECTOR(on_update);
+
     content_t content() const;
     bool exists() const;
     bool is_dir() const;
@@ -51,6 +57,8 @@ class Entry {
  private:
     storage_ptr_t lock_storage() const;
     void throws_if_nonexistent() const;
+
+    signal_t                        on_update_;
 
     content_t                       content_;
     mutable std::mutex              mutex_;

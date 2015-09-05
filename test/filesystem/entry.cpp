@@ -80,13 +80,16 @@ TEST(EntryTest, invalidate) {
 TEST(EntryTest, ls) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
     auto entry   = storage->create(URL, STATUS);
+    std::string url;
     Entry::content_t content{
         storage->create("file1", STATUS),
         storage->create("file2", STATUS)};
     ASSERT_NE(entry, nullptr);
     EXPECT_CALL(*storage, ls(testing::Ref(*entry))).WillOnce(testing::Return(content));
+    entry->on_update([&url](const Entry& entry) { url = entry.url(); });
     ASSERT_NO_THROW(entry->ls());
     ASSERT_EQ(entry->content().size(), content.size());
+    ASSERT_EQ(entry->url(), url);
 }
 
 }  // namespace filesystem

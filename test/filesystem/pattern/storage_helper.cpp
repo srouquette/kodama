@@ -42,7 +42,7 @@ fs::path StorageHelper::create_file(fs::path path) const {
     if (fs::exists(path)) {
         return path;
     }
-    std::ofstream{ path };
+    std::ofstream{ path.string() };
     entries_.insert(path);
     return path;
 }
