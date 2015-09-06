@@ -13,7 +13,6 @@
 
 #include <boost/signals2.hpp>
 
-#include <mutex>  // NOLINT
 #include <string>
 #include <vector>
 

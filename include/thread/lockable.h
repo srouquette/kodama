@@ -6,6 +6,9 @@
 #ifndef INCLUDE_THREAD_LOCKABLE_H_
 #define INCLUDE_THREAD_LOCKABLE_H_
 
+#include <mutex>  // NOLINT
+
+
 namespace kodama { namespace thread {
 
 template<typename T, typename Mutex>
