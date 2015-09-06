@@ -9,7 +9,6 @@
 #include "common/macro.h"
 #include "filesystem/forward_decl.h"
 #include "filesystem/namespace.h"
-#include "thread/lock.h"
 #include "thread/lockable.h"
 
 #include <boost/signals2.hpp>
@@ -53,9 +52,7 @@ class Entry {
     void invalidate() noexcept;
     void ls();
     const fs::path& path() const;
-    thread::shared_lock_t shared_lock() const;
-    thread::unique_lock_t unique_lock() const;
-    const fs::file_status& status() const noexcept;
+    fs::file_status status() const noexcept;
     const std::string& url() const noexcept;
 
  private:
@@ -71,7 +68,6 @@ class Entry {
     signal_t                    on_update_;
 
     const fs::path              path_;
-    mutable boost::shared_mutex shared_mutex_;
     // weak_ptr to prevent circular ref
     std::weak_ptr<Storage>      storage_;
     const std::string           url_;

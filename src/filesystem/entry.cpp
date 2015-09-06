@@ -20,7 +20,6 @@ Entry::Entry(const storage_ptr_t& storage,
              const key&)
     : on_update_{}
     , path_{ path }
-    , shared_mutex_{}
     , storage_{ storage }
     , url_{ url }
     , content_{}
@@ -31,12 +30,10 @@ Entry::~Entry()
 {}
 
 Entry::entries_t Entry::content() const {
-    std::lock_guard<content_t> lock{ content_ };
-    return content_.value();
+    return content_.clone();
 }
 
 bool Entry::exists() const {
-    std::lock_guard<status_t> lock{ status_ };
     try {
         return storage()->exists(*this);
     } catch (const filesystem_error&) {
@@ -45,7 +42,6 @@ bool Entry::exists() const {
 }
 
 bool Entry::is_dir() const {
-    std::lock_guard<status_t> lock{ status_ };
     return storage()->is_dir(*this);
 }
 
@@ -54,9 +50,8 @@ void Entry::invalidate() noexcept {
 }
 
 void Entry::ls() {
-    safe_update_status();
+    update_status();
     auto content = storage()->ls(*this);
-    std::lock_guard<content_t> lock{ content_ };
     content_ = std::move(content);
     on_update_(*this);
 }
@@ -65,20 +60,8 @@ const fs::path& Entry::path() const {
     return path_;
 }
 
-thread::shared_lock_t Entry::shared_lock() const {
-    std::lock_guard<status_t> lock{ status_ };
-    throws_if_nonexistent();
-    return thread::shared_lock_t{ shared_mutex_ };
-}
-
-thread::unique_lock_t Entry::unique_lock() const {
-    std::lock_guard<status_t> lock{ status_ };
-    throws_if_nonexistent();
-    return thread::unique_lock_t{ shared_mutex_ };
-}
-
-const fs::file_status& Entry::status() const noexcept {
-    return status_.value();
+fs::file_status Entry::status() const noexcept {
+    return status_.clone();
 }
 
 const std::string& Entry::url() const noexcept {
@@ -97,11 +80,6 @@ void Entry::throws_if_nonexistent() const {
     if (!storage()->exists(*this)) {
         throw EXCEPTION(__FUNCTION__, url_, no_such_file_or_directory);
     }
-}
-
-void Entry::safe_update_status() const {
-    std::lock_guard<status_t> lock{ status_ };
-    update_status();
 }
 
 void Entry::update_status() const {

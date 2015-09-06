@@ -11,14 +11,14 @@ namespace kodama { namespace thread {
 template<typename T, typename Mutex>
 class Lockable {
  public:
+    explicit Lockable(T&& value)
+        : mutex_{}
+        , value_{ std::forward<T>(value) }
+    {}
     explicit Lockable(const T& value)
         : mutex_{}
         , value_{ value }
     {}
-    Lockable& operator=(T&& value) {
-        value_ = std::forward<T>(value);
-        return *this;
-    }
 
     Lockable()                              = default;
     Lockable(const Lockable&)               = default;
@@ -36,6 +36,17 @@ class Lockable {
     void unlock() {
         mutex_.unlock();
     }
+
+    Lockable& operator=(T&& value) {
+        std::lock_guard<Mutex> lock{ mutex_ };
+        value_ = std::forward<T>(value);
+        return *this;
+    }
+    const T clone() const {
+        std::lock_guard<Mutex> lock{ mutex_ };
+        return value_;
+    }
+    // unsafe, need to be locked externally
     const T& value() const {
         return value_;
     }
