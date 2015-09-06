@@ -9,7 +9,6 @@
 #include "common/macro.h"
 #include "filesystem/forward_decl.h"
 #include "filesystem/namespace.h"
-#include "thread/lockable.h"
 
 #include <boost/signals2.hpp>
 
@@ -43,9 +42,11 @@ class Entry {
     Entry& operator=(Entry&&)   = default;
     ~Entry();
 
+    bool operator==(const Entry& rhs) const;
+
     SIGNAL_CONNECTOR(on_update);
 
-    entries_t content()         const noexcept;
+    const entries_t& content()  const noexcept;
     bool exists()               const noexcept;
     bool is_dir()               const;
     const fs::path& path()      const noexcept;
@@ -54,11 +55,8 @@ class Entry {
     void ls();
 
  private:
-    using content_t = thread::Lockable<entries_t, std::mutex>;
-    using status_t  = thread::Lockable<fs::file_status, std::mutex>;
-
     storage_ptr_t get_storage() const;
-    void update_status(const Storage& storage) const;
+    void update_status(const Storage& storage);
 
     signal_t                    on_update_;
 
@@ -66,8 +64,8 @@ class Entry {
     // weak_ptr to prevent circular ref
     std::weak_ptr<Storage>      storage_;
     const std::string           url_;
-    mutable content_t           content_;
-    mutable status_t            status_;
+    entries_t                   content_;
+    fs::file_status             status_;
 };
 
 }  // namespace filesystem

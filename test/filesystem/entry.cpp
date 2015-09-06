@@ -11,6 +11,8 @@
 #include "gmock/gmock.h"
 
 #include <iostream>
+#include <vector>
+
 
 namespace kodama { namespace filesystem {
 namespace fs = FILESYSTEM_NAMESPACE;
@@ -25,6 +27,15 @@ TEST(EntryTest, same_url) {
     auto entry   = storage->create(PATH, STATUS);
     ASSERT_NE(entry, nullptr);
     ASSERT_EQ(entry->url(), URL);
+}
+
+TEST(EntryTest, equals) {
+    auto storage = std::make_shared<MockStorage>(SCHEME);
+    auto entry1 = storage->create(PATH, STATUS);
+    auto entry2 = storage->create(PATH, STATUS);
+    ASSERT_NE(entry1, nullptr);
+    ASSERT_NE(entry2, nullptr);
+    ASSERT_EQ(*entry1, *entry2);
 }
 
 TEST(EntryTest, is_dir) {

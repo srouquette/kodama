@@ -8,9 +8,8 @@
 
 #include "common/macro.h"
 #include "filesystem/forward_decl.h"
-#include "platform/pragma.h"
-
 #include "filesystem/namespace.h"
+#include "platform/pragma.h"
 
 #include <boost/signals2.hpp>
 

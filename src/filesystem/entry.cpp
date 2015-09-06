@@ -29,8 +29,12 @@ Entry::Entry(const storage_ptr_t& storage,
 Entry::~Entry()
 {}
 
-Entry::entries_t Entry::content() const noexcept {
-    return content_.clone();
+bool Entry::operator==(const Entry& rhs) const {
+    return url_ == rhs.url();
+}
+
+const Entry::entries_t& Entry::content() const noexcept {
+    return content_;
 }
 
 const fs::path& Entry::path() const noexcept {
@@ -43,7 +47,6 @@ const std::string& Entry::url() const noexcept {
 
 bool Entry::exists() const noexcept {
     try {
-        std::lock_guard<status_t> lock{ status_ };
         return get_storage()->exists(status_);
     } catch (const filesystem_error&) {
         return false;
@@ -51,12 +54,10 @@ bool Entry::exists() const noexcept {
 }
 
 bool Entry::is_dir() const {
-    std::lock_guard<status_t> lock{ status_ };
     return get_storage()->is_dir(status_);
 }
 
 void Entry::ls() {
-    std::lock_guard<status_t> lock{ status_ };
     auto storage = get_storage();
     update_status(*storage);
     if (!storage->is_dir(status_)) {
@@ -77,8 +78,8 @@ storage_ptr_t Entry::get_storage() const {
     return storage_.lock();
 }
 
-void Entry::update_status(const Storage& storage) const {
-    status_.assign(storage.status(*this));
+void Entry::update_status(const Storage& storage) {
+    status_ = storage.status(*this);
     if (!storage.exists(status_)) {
         throw EXCEPTION(__FUNCTION__, url_, no_such_file_or_directory);
     }
