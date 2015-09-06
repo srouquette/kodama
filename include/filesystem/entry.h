@@ -45,24 +45,23 @@ class Entry {
 
     SIGNAL_CONNECTOR(on_update);
 
-    entries_t content() const;
-    bool exists() const;
+    entries_t content() const noexcept;
+    bool exists() const noexcept;
     bool is_dir() const;
-    void invalidate() noexcept;
-    void ls();
-    const fs::path& path() const;
-    fs::file_status status() const noexcept;
+    const fs::path& path() const noexcept;
     const std::string& url() const noexcept;
+
+    void invalidate() noexcept;
+
+    void ls();
 
  private:
     using content_t = thread::Lockable<entries_t, std::mutex>;
     using status_t  = thread::Lockable<fs::file_status, std::mutex>;
 
-    storage_ptr_t storage() const;
-    void throws_if_nonexistent() const;
-    void throws_if_storage_null() const;
-    void safe_update_status() const;
-    void update_status() const;
+    storage_ptr_t get_storage() const;
+    fs::file_status status() const noexcept;
+    void update_status(const Storage& storage) const;
 
     signal_t                    on_update_;
 

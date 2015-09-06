@@ -29,61 +29,57 @@ Entry::Entry(const storage_ptr_t& storage,
 Entry::~Entry()
 {}
 
-Entry::entries_t Entry::content() const {
+Entry::entries_t Entry::content() const noexcept {
     return content_.clone();
 }
 
-bool Entry::exists() const {
-    try {
-        return storage()->exists(*this);
-    } catch (const filesystem_error&) {
-        return false;
-    }
-}
-
-bool Entry::is_dir() const {
-    return storage()->is_dir(*this);
-}
-
-void Entry::invalidate() noexcept {
-    storage_.reset();
-}
-
-void Entry::ls() {
-    update_status();
-    auto content = storage()->ls(*this);
-    content_ = std::move(content);
-    on_update_(*this);
-}
-
-const fs::path& Entry::path() const {
+const fs::path& Entry::path() const noexcept {
     return path_;
-}
-
-fs::file_status Entry::status() const noexcept {
-    return status_.clone();
 }
 
 const std::string& Entry::url() const noexcept {
     return url_;
 }
 
-storage_ptr_t Entry::storage() const {
+bool Entry::exists() const noexcept {
+    try {
+        return get_storage()->exists(*this);
+    } catch (const filesystem_error&) {
+        return false;
+    }
+}
+
+bool Entry::is_dir() const {
+    return get_storage()->is_dir(*this);
+}
+
+void Entry::ls() {
+    auto storage = get_storage();
+    update_status(*storage);
+    content_ = storage->ls(*this);
+    on_update_(*this);
+}
+
+void Entry::invalidate() noexcept {
+    storage_.reset();
+}
+
+storage_ptr_t Entry::get_storage() const {
     if (storage_.expired()) {
         throw EXCEPTION(__FUNCTION__, url_, no_such_device);
     }
     return storage_.lock();
 }
 
-void Entry::throws_if_nonexistent() const {
-    update_status();
-    if (!storage()->exists(*this)) {
-        throw EXCEPTION(__FUNCTION__, url_, no_such_file_or_directory);
-    }
+fs::file_status Entry::status() const noexcept {
+    return status_.clone();
 }
 
-void Entry::update_status() const {
-    status_ = storage()->status(*this);
+void Entry::update_status(const Storage& storage) const {
+    status_ = storage.status(*this);
+    if (!storage.exists(*this)) {
+        throw EXCEPTION(__FUNCTION__, url_, no_such_file_or_directory);
+    }
 }
 
 }  // namespace filesystem
