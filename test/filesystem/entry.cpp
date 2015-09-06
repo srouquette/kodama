@@ -82,7 +82,7 @@ TEST(EntryTest, ls) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
     auto entry   = storage->create(PATH, STATUS);
     std::string url;
-    Entry::content_t content{
+    Entry::entries_t content{
         storage->create("file1", STATUS),
         storage->create("file2", STATUS)};
     ASSERT_NE(entry, nullptr);

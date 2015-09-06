@@ -10,6 +10,7 @@
 #include "filesystem/forward_decl.h"
 #include "filesystem/namespace.h"
 #include "thread/lock.h"
+#include "thread/lockable.h"
 
 #include <boost/signals2.hpp>
 
@@ -23,7 +24,7 @@ namespace fs = FILESYSTEM_NAMESPACE;
 
 class Entry {
  public:
-    using content_t = std::vector<entry_ptr_t>;
+    using entries_t = std::vector<entry_ptr_t>;
     using signal_t  = boost::signals2::signal<void (const Entry&)>;
 
     friend class Storage;
@@ -46,7 +47,7 @@ class Entry {
 
     SIGNAL_CONNECTOR(on_update);
 
-    content_t content() const;
+    entries_t content() const;
     bool exists() const;
     bool is_dir() const;
     void invalidate() noexcept;
@@ -54,24 +55,28 @@ class Entry {
     const fs::path& path() const;
     thread::shared_lock_t shared_lock() const;
     thread::unique_lock_t unique_lock() const;
+    const fs::file_status& status() const noexcept;
     const std::string& url() const noexcept;
 
  private:
+    using content_t = thread::Lockable<entries_t, std::mutex>;
+    using status_t  = thread::Lockable<fs::file_status, std::mutex>;
+
     storage_ptr_t storage() const;
     void throws_if_nonexistent() const;
     void throws_if_storage_null() const;
     void safe_update_status() const;
     void update_status() const;
 
-    signal_t                        on_update_;
+    signal_t                    on_update_;
 
-    content_t                       content_;
-    mutable std::mutex              mutex_;
-    const fs::path                  path_;
-    mutable boost::shared_mutex     shared_mutex_;
-    mutable fs::file_status         status_;
-    std::weak_ptr<Storage>          storage_;  // weak_ptr to prevent circular ref
-    const std::string               url_;
+    const fs::path              path_;
+    mutable boost::shared_mutex shared_mutex_;
+    // weak_ptr to prevent circular ref
+    std::weak_ptr<Storage>      storage_;
+    const std::string           url_;
+    mutable content_t           content_;
+    mutable status_t            status_;
 };
 
 }  // namespace filesystem

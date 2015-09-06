@@ -62,11 +62,11 @@ entry_ptr_t Storage::create(const fs::path& path, const fs::file_status& status)
 }
 
 bool Storage::exists(const Entry& entry) const {
-    return fs::exists(entry.status_);
+    return fs::exists(entry.status());
 }
 
 bool Storage::is_dir(const Entry& entry) const {
-    return fs::is_directory(entry.status_);
+    return fs::is_directory(entry.status());
 }
 
 std::vector<entry_ptr_t> Storage::ls(const Entry& entry) {

@@ -19,25 +19,24 @@ Entry::Entry(const storage_ptr_t& storage,
              const fs::file_status& status,
              const key&)
     : on_update_{}
-    , content_{}
-    , mutex_{}
     , path_{ path }
     , shared_mutex_{}
-    , status_{ status }
     , storage_{ storage }
     , url_{ url }
+    , content_{}
+    , status_{ status }
 {}
 
 Entry::~Entry()
 {}
 
-Entry::content_t Entry::content() const {
-    std::lock_guard<std::mutex> lock{ mutex_ };
-    return content_;
+Entry::entries_t Entry::content() const {
+    std::lock_guard<content_t> lock{ content_ };
+    return content_.value();
 }
 
 bool Entry::exists() const {
-    std::lock_guard<std::mutex> lock{ mutex_ };
+    std::lock_guard<status_t> lock{ status_ };
     try {
         return storage()->exists(*this);
     } catch (const filesystem_error&) {
@@ -46,7 +45,7 @@ bool Entry::exists() const {
 }
 
 bool Entry::is_dir() const {
-    std::lock_guard<std::mutex> lock{ mutex_ };
+    std::lock_guard<status_t> lock{ status_ };
     return storage()->is_dir(*this);
 }
 
@@ -57,8 +56,8 @@ void Entry::invalidate() noexcept {
 void Entry::ls() {
     safe_update_status();
     auto content = storage()->ls(*this);
-    std::lock_guard<std::mutex> lock{ mutex_ };
-    std::swap(content_, content);
+    std::lock_guard<content_t> lock{ content_ };
+    content_ = std::move(content);
     on_update_(*this);
 }
 
@@ -67,15 +66,19 @@ const fs::path& Entry::path() const {
 }
 
 thread::shared_lock_t Entry::shared_lock() const {
-    std::lock_guard<std::mutex> lock{ mutex_ };
+    std::lock_guard<status_t> lock{ status_ };
     throws_if_nonexistent();
     return thread::shared_lock_t{ shared_mutex_ };
 }
 
 thread::unique_lock_t Entry::unique_lock() const {
-    std::lock_guard<std::mutex> lock{ mutex_ };
+    std::lock_guard<status_t> lock{ status_ };
     throws_if_nonexistent();
     return thread::unique_lock_t{ shared_mutex_ };
+}
+
+const fs::file_status& Entry::status() const noexcept {
+    return status_.value();
 }
 
 const std::string& Entry::url() const noexcept {
@@ -97,7 +100,7 @@ void Entry::throws_if_nonexistent() const {
 }
 
 void Entry::safe_update_status() const {
-    std::lock_guard<std::mutex> lock{ mutex_ };
+    std::lock_guard<status_t> lock{ status_ };
     update_status();
 }
 
