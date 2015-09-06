@@ -11,13 +11,13 @@
 
 namespace kodama { namespace filesystem {
 
+#define EXCEPTION(what, path, errorcode) filesystem_error(what, path, MAKE_ERROR_CODE(errorcode))
+
 #if STL_FILESYSTEM_ENABLED
 
 #include <system_error>  // NOLINT
 
-#define EXCEPTION(what, path, errorcode) \
-    filesystem_error(what, path,         \
-    std::make_error_code(std::errc::errorcode))
+#define MAKE_ERROR_CODE(errorcode) std::make_error_code(std::errc::errorcode)
 
 class filesystem_error : public std::system_error {
  public:
@@ -34,9 +34,7 @@ class filesystem_error : public std::system_error {
 
 #else  // STL_FILESYSTEM_ENABLED
 
-#define EXCEPTION(what, path, errorcode) \
-    filesystem_error(what, path,         \
-    boost::system::errc::make_error_code(boost::system::errc::errorcode))
+#define MAKE_ERROR_CODE(errorcode) std::make_error_code(boost::system::errc::errorcode)
 
 class filesystem_error : public boost::filesystem::filesystem_error {
  public:

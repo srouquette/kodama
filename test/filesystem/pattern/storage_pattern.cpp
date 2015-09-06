@@ -7,6 +7,7 @@
 #include "filesystem/entry.h"
 #include "filesystem/exception.h"
 #include "filesystem/storage.h"
+#include "test/common/exception.h"
 
 #include <iostream>
 
@@ -98,22 +99,20 @@ TEST_P(StoragePattern, resolve_invalid_path) {
 TEST_P(StoragePattern, ls_nonexistent) {
     auto storage = GetParam().storage();
     auto path    = GetParam().create_dir(DIRNAME);
-    auto url     = storage->to_url(path);
-    auto entry   = storage->resolve(url);
+    auto entry   = storage->resolve(storage->to_url(path));
     ASSERT_NE(entry, nullptr);
     ASSERT_TRUE(entry->is_dir());
     GetParam().remove(path);
-    ASSERT_THROW(entry->ls(), filesystem_error);
+    ASSERT_EX_CODE(entry->ls(), filesystem_error, no_such_file_or_directory);
 }
 
 TEST_P(StoragePattern, ls_invalid_dir) {
     auto storage = GetParam().storage();
     auto path    = GetParam().create_file(FILENAME);
-    auto url     = storage->to_url(path);
-    auto entry   = storage->resolve(url);
+    auto entry   = storage->resolve(storage->to_url(path));
     ASSERT_NE(entry, nullptr);
     ASSERT_FALSE(entry->is_dir());
-    ASSERT_THROW(entry->ls(), filesystem_error);
+    ASSERT_EX_CODE(entry->ls(), filesystem_error, not_a_directory);
 }
 
 TEST_P(StoragePattern, ls) {

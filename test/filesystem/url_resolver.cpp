@@ -5,7 +5,9 @@
 
 #include "filesystem/url_resolver.h"
 #include "filesystem/exception.h"
+#include "test/common/exception.h"
 #include "test/filesystem/mock/storage.h"
+
 #include "gmock/gmock.h"
 
 namespace kodama { namespace filesystem {
@@ -31,7 +33,7 @@ TEST(UrlResolverTest, add_storage_with_existing_scheme) {
 
 TEST(UrlResolverTest, resolve_without_storage) {
     UrlResolver resolver;
-    ASSERT_THROW(resolver.resolve(URL), filesystem_error);
+    ASSERT_EX_CODE(resolver.resolve(URL), filesystem_error, no_such_file_or_directory);
 }
 
 TEST(UrlResolverTest, cannot_resolve_url) {
@@ -39,7 +41,7 @@ TEST(UrlResolverTest, cannot_resolve_url) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
     EXPECT_CALL(*storage, resolve(URL)).Times(2).WillRepeatedly(testing::Return(nullptr));
     ASSERT_NO_THROW(resolver.add(storage));
-    ASSERT_THROW(resolver.resolve(URL), filesystem_error);
+    ASSERT_EX_CODE(resolver.resolve(URL), filesystem_error, no_such_file_or_directory);
 }
 
 TEST(UrlResolverTest, can_resolve_url) {

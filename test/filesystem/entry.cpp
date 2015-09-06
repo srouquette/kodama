@@ -6,6 +6,8 @@
 #include "filesystem/entry.h"
 #include "filesystem/exception.h"
 #include "test/filesystem/mock/storage.h"
+#include "test/common/exception.h"
+
 #include "gmock/gmock.h"
 
 #include <iostream>
@@ -54,8 +56,23 @@ TEST(EntryTest, invalidate) {
     EXPECT_CALL(*storage, is_dir(testing::_)).Times(0);
     EXPECT_CALL(*storage, ls(testing::_)).Times(0);
     ASSERT_FALSE(entry->exists());
-    ASSERT_THROW(entry->is_dir(), filesystem_error);
-    ASSERT_THROW(entry->ls(), filesystem_error);
+    ASSERT_EX_CODE(entry->is_dir(), filesystem_error, no_such_device);
+    ASSERT_EX_CODE(entry->ls(), filesystem_error, no_such_device);
+}
+
+TEST(EntryTest, ls_nonexistent) {
+    auto storage = std::make_shared<MockStorage>(SCHEME);
+    auto entry   = storage->create(PATH, STATUS);
+    EXPECT_CALL(*storage, exists(testing::_)).WillOnce(testing::Return(false));
+    ASSERT_EX_CODE(entry->ls(), filesystem_error, no_such_file_or_directory);
+}
+
+TEST(EntryTest, ls_invalid_dir) {
+    auto storage = std::make_shared<MockStorage>(SCHEME);
+    auto entry   = storage->create(PATH, STATUS);
+    EXPECT_CALL(*storage, exists(testing::_)).WillOnce(testing::Return(true));
+    EXPECT_CALL(*storage, is_dir(testing::_)).WillOnce(testing::Return(false));
+    ASSERT_EX_CODE(entry->ls(), filesystem_error, not_a_directory);
 }
 
 TEST(EntryTest, ls) {

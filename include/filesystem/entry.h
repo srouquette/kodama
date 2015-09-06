@@ -37,22 +37,20 @@ class Entry {
           const fs::file_status& status,
           const key&);
 
-    Entry(const Entry&)             = default;
-    Entry(Entry&&)                  = default;
+    Entry(const Entry&)         = default;
+    Entry(Entry&&)              = default;
     Entry& operator=(const Entry&)  = default;
-    Entry& operator=(Entry&&)       = default;
+    Entry& operator=(Entry&&)   = default;
     ~Entry();
 
     SIGNAL_CONNECTOR(on_update);
 
-    entries_t content() const noexcept;
-    bool exists() const noexcept;
-    bool is_dir() const;
-    const fs::path& path() const noexcept;
-    const std::string& url() const noexcept;
-
-    void invalidate() noexcept;
-
+    entries_t content()         const noexcept;
+    bool exists()               const noexcept;
+    bool is_dir()               const;
+    const fs::path& path()      const noexcept;
+    const std::string& url()    const noexcept;
+    void invalidate()           noexcept;
     void ls();
 
  private:

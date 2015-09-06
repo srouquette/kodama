@@ -49,6 +49,7 @@ class Storage : public std::enable_shared_from_this<Storage> {
     virtual bool exists(const fs::file_status& status) const;
     virtual bool is_dir(const fs::file_status& status) const;
     // gmock doesn't like fs::path as a parameter, I'll pass the Entry instead
+    // https://code.google.com/p/googlemock/issues/detail?id=170
     virtual std::vector<entry_ptr_t> ls(const Entry& entry);
     virtual fs::file_status status(const Entry& entry) const;
 
