@@ -36,6 +36,14 @@ Entry::content_t Entry::content() const {
     return content_;
 }
 
+const fs::path& Entry::path() const noexcept {
+    return path_;
+}
+
+const std::string& Entry::url() const noexcept {
+    return url_;
+}
+
 bool Entry::exists() const {
     std::lock_guard<std::mutex> lock{ mutex_ };
     try {
@@ -55,15 +63,11 @@ void Entry::invalidate() noexcept {
 }
 
 void Entry::ls() {
-    safe_update_status();
+    update_status_safely();
     auto content = storage()->ls(*this);
     std::lock_guard<std::mutex> lock{ mutex_ };
     std::swap(content_, content);
     on_update_(*this);
-}
-
-const fs::path& Entry::path() const {
-    return path_;
 }
 
 thread::shared_lock_t Entry::shared_lock() const {
@@ -76,10 +80,6 @@ thread::unique_lock_t Entry::unique_lock() const {
     std::lock_guard<std::mutex> lock{ mutex_ };
     throws_if_nonexistent();
     return thread::unique_lock_t{ shared_mutex_ };
-}
-
-const std::string& Entry::url() const noexcept {
-    return url_;
 }
 
 storage_ptr_t Entry::storage() const {
@@ -96,7 +96,7 @@ void Entry::throws_if_nonexistent() const {
     }
 }
 
-void Entry::safe_update_status() const {
+void Entry::update_status_safely() const {
     std::lock_guard<std::mutex> lock{ mutex_ };
     update_status();
 }

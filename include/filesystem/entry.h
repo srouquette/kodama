@@ -47,20 +47,21 @@ class Entry {
     SIGNAL_CONNECTOR(on_update);
 
     content_t content() const;
+    const fs::path& path() const noexcept;
+    const std::string& url() const noexcept;
+
     bool exists() const;
     bool is_dir() const;
     void invalidate() noexcept;
     void ls();
-    const fs::path& path() const;
     thread::shared_lock_t shared_lock() const;
     thread::unique_lock_t unique_lock() const;
-    const std::string& url() const noexcept;
 
  private:
     storage_ptr_t storage() const;
     void throws_if_nonexistent() const;
     void throws_if_storage_null() const;
-    void safe_update_status() const;
+    void update_status_safely() const;
     void update_status() const;
 
     signal_t                        on_update_;
