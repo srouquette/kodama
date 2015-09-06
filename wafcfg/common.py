@@ -178,6 +178,7 @@ def check_filesystem(conf):
         conf.define('STL_FILESYSTEM_ENABLED', 1)
         conf.end_msg('<filesystem>')
     except:
+        conf.define('STL_FILESYSTEM_ENABLED', 0)
         conf.end_msg('<boost/filesystem.hpp>')
 
 

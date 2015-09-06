@@ -29,9 +29,9 @@ TEST(EntryTest, is_dir) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
     auto entry   = storage->create(PATH, STATUS);
     ASSERT_NE(entry, nullptr);
-    EXPECT_CALL(*storage, is_dir(testing::Ref(*entry))).WillOnce(testing::Return(false));
+    EXPECT_CALL(*storage, is_dir(testing::_)).WillOnce(testing::Return(false));
     ASSERT_FALSE(entry->is_dir());
-    EXPECT_CALL(*storage, is_dir(testing::Ref(*entry))).WillOnce(testing::Return(true));
+    EXPECT_CALL(*storage, is_dir(testing::_)).WillOnce(testing::Return(true));
     ASSERT_TRUE(entry->is_dir());
 }
 
@@ -39,9 +39,9 @@ TEST(EntryTest, exists) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
     auto entry   = storage->create(PATH, STATUS);
     ASSERT_NE(entry, nullptr);
-    EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(false));
+    EXPECT_CALL(*storage, exists(testing::_)).WillOnce(testing::Return(false));
     ASSERT_FALSE(entry->exists());
-    EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(true));
+    EXPECT_CALL(*storage, exists(testing::_)).WillOnce(testing::Return(true));
     ASSERT_TRUE(entry->exists());
 }
 
@@ -50,9 +50,9 @@ TEST(EntryTest, invalidate) {
     auto entry   = storage->create(PATH, STATUS);
     ASSERT_NE(entry, nullptr);
     entry->invalidate();
-    EXPECT_CALL(*storage, exists(testing::Ref(*entry))).Times(0);
-    EXPECT_CALL(*storage, is_dir(testing::Ref(*entry))).Times(0);
-    EXPECT_CALL(*storage, ls(testing::Ref(*entry))).Times(0);
+    EXPECT_CALL(*storage, exists(testing::_)).Times(0);
+    EXPECT_CALL(*storage, is_dir(testing::_)).Times(0);
+    EXPECT_CALL(*storage, ls(testing::_)).Times(0);
     ASSERT_FALSE(entry->exists());
     ASSERT_THROW(entry->is_dir(), filesystem_error);
     ASSERT_THROW(entry->ls(), filesystem_error);
@@ -66,13 +66,15 @@ TEST(EntryTest, ls) {
         storage->create("file1", STATUS),
         storage->create("file2", STATUS)};
     ASSERT_NE(entry, nullptr);
-    EXPECT_CALL(*storage, exists(testing::Ref(*entry))).WillOnce(testing::Return(true));
-    EXPECT_CALL(*storage, ls(testing::Ref(*entry))).WillOnce(testing::Return(content));
+    EXPECT_CALL(*storage, exists(testing::_)).WillOnce(testing::Return(true));
+    EXPECT_CALL(*storage, is_dir(testing::_)).WillOnce(testing::Return(true));
+    EXPECT_CALL(*storage, ls(testing::_)).WillOnce(testing::Return(content));
     entry->on_update([&url](const Entry& entry) { url = entry.url(); });
     ASSERT_NO_THROW(entry->ls());
     ASSERT_EQ(entry->url(), url);
     ASSERT_EQ(entry->content().size(), content.size());
 }
+
 
 }  // namespace filesystem
 }  // namespace kodama

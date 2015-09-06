@@ -7,11 +7,15 @@
 #define INCLUDE_FILESYSTEM_NAMESPACE_H_
 
 #if STL_FILESYSTEM_ENABLED
-    #include <filesystem>
-    #define FILESYSTEM_NAMESPACE    std::tr2::sys
-#else
-    #include <boost/filesystem.hpp>
-    #define FILESYSTEM_NAMESPACE    boost::filesystem
-#endif
+
+#include <filesystem>
+#define FILESYSTEM_NAMESPACE    std::tr2::sys
+
+#else  // STL_FILESYSTEM_ENABLED
+
+#include <boost/filesystem.hpp>
+#define FILESYSTEM_NAMESPACE    boost::filesystem
+
+#endif  // STL_FILESYSTEM_ENABLED
 
 #endif  // INCLUDE_FILESYSTEM_NAMESPACE_H_

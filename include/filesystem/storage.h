@@ -46,8 +46,9 @@ class Storage : public std::enable_shared_from_this<Storage> {
 
  protected:
     virtual entry_ptr_t create(const fs::path& path, const fs::file_status& status);
-    virtual bool exists(const Entry& entry) const;
-    virtual bool is_dir(const Entry& entry) const;
+    virtual bool exists(const fs::file_status& status) const;
+    virtual bool is_dir(const fs::file_status& status) const;
+    // gmock doesn't like fs::path as a parameter, I'll pass the Entry instead
     virtual std::vector<entry_ptr_t> ls(const Entry& entry);
     virtual fs::file_status status(const Entry& entry) const;
 

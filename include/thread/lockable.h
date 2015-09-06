@@ -49,8 +49,13 @@ class Lockable {
         std::lock_guard<Mutex> lock{ mutex_ };
         return value_;
     }
+
     // unsafe, need to be locked externally
-    const T& value() const {
+    void assign(T&& value) {
+        value_ = std::forward<T>(value);
+    }
+    // unsafe, need to be locked externally
+    operator const T&() const {
         return value_;
     }
 

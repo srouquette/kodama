@@ -14,8 +14,7 @@ namespace fs = FILESYSTEM_NAMESPACE;
 MockStorage::MockStorage(const std::string& scheme)
     : Storage(scheme)
 {
-    ON_CALL(*this, status(testing::An<const Entry&>()))
-        .WillByDefault(testing::Return(fs::file_status{}));
+    ON_CALL(*this, status(testing::_)).WillByDefault(testing::Return(fs::file_status{}));
 }
 
 }  // namespace filesystem

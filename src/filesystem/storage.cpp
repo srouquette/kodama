@@ -61,29 +61,23 @@ entry_ptr_t Storage::create(const fs::path& path, const fs::file_status& status)
     return entry;
 }
 
-bool Storage::exists(const Entry& entry) const {
-    return fs::exists(entry.status());
+bool Storage::exists(const fs::file_status& status) const {
+    return fs::exists(status);
 }
 
-bool Storage::is_dir(const Entry& entry) const {
-    return fs::is_directory(entry.status());
+bool Storage::is_dir(const fs::file_status& status) const {
+    return fs::is_directory(status);
 }
 
 std::vector<entry_ptr_t> Storage::ls(const Entry& entry) {
-    if (!exists(entry)) {
-        throw EXCEPTION(__FUNCTION__, entry.url(), no_such_file_or_directory);
-    }
-    if (!is_dir(entry)) {
-        throw EXCEPTION(__FUNCTION__, entry.url(), not_a_directory);
-    }
-    auto path = entry.path();
     std::lock_guard<std::mutex> lock{ mutex_ };
-    std::vector<entry_ptr_t> content;
+    Entry::entries_t content;
 #if USE_DIR_RANGE_ITERATOR
-    for (const auto& dir_entry : fs::directory_iterator(path)) {
+    for (const auto& dir_entry : fs::directory_iterator(entry.path()))
 #else
-    for (const auto& dir_entry : boost::make_iterator_range(fs::directory_iterator(path), fs::directory_iterator())) {
+    for (const auto& dir_entry : boost::make_iterator_range(fs::directory_iterator(entry.path()), fs::directory_iterator()))
 #endif
+    {
         content.push_back(
             get_or_create(dir_entry.path(),
                           [&dir_entry](const fs::path&) {
@@ -94,7 +88,7 @@ std::vector<entry_ptr_t> Storage::ls(const Entry& entry) {
 }
 
 fs::file_status Storage::status(const Entry& entry) const {
-    return fs::status(split(entry.url()));
+    return fs::status(entry.path());
 }
 
 fs::path Storage::split(const std::string& url) const {

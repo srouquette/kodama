@@ -60,7 +60,6 @@ class Entry {
     using status_t  = thread::Lockable<fs::file_status, std::mutex>;
 
     storage_ptr_t get_storage() const;
-    fs::file_status status() const noexcept;
     void update_status(const Storage& storage) const;
 
     signal_t                    on_update_;

@@ -23,8 +23,8 @@ class MockStorage : public Storage {
     explicit MockStorage(const std::string& scheme);
 
     MOCK_METHOD1(resolve, entry_ptr_t (const std::string&));
-    MOCK_CONST_METHOD1(is_dir, bool (const Entry&));
-    MOCK_CONST_METHOD1(exists, bool (const Entry&));
+    MOCK_CONST_METHOD1(is_dir, bool (const fs::file_status&));
+    MOCK_CONST_METHOD1(exists, bool (const fs::file_status&));
     MOCK_METHOD1(ls, std::vector<entry_ptr_t> (const Entry&));
     MOCK_CONST_METHOD1(status, fs::file_status (const Entry&));
 };
