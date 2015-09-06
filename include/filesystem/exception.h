@@ -34,7 +34,7 @@ class filesystem_error : public std::system_error {
 
 #else  // STL_FILESYSTEM_ENABLED
 
-#define MAKE_ERROR_CODE(errorcode) std::make_error_code(boost::system::errc::errorcode)
+#define MAKE_ERROR_CODE(errorcode) boost::system::errc::make_error_code(boost::system::errc::errorcode)
 
 class filesystem_error : public boost::filesystem::filesystem_error {
  public:
