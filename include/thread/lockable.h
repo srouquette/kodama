@@ -30,17 +30,9 @@ class Lockable {
     Lockable& operator=(Lockable&&)         = default;
     ~Lockable()                             = default;
 
-    void lock() {
-        mutex_.lock();
-    }
-
-    bool try_lock() {
-        return mutex_.try_lock();
-    }
-
-    void unlock() {
-        mutex_.unlock();
-    }
+    void lock()     const { mutex_.lock(); }
+    void unlock()   const { mutex_.unlock(); }
+    bool try_lock() const { return mutex_.try_lock(); }
 
     Lockable& operator=(T&& value) {
         std::lock_guard<Mutex> lock{ mutex_ };
@@ -60,6 +52,11 @@ class Lockable {
 
     template<typename U>
     const T& get(const std::lock_guard<U>&) const {
+        return value_;
+    }
+
+    template<typename U>
+    T& get(const std::lock_guard<U>&) {
         return value_;
     }
 

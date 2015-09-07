@@ -20,7 +20,6 @@ Storage::Storage(const std::string& scheme)
     : on_create_{}
     , on_delete_{}
     , entries_{}
-    , mutex_{}
     , scheme_{ scheme }
 {}
 
@@ -32,18 +31,18 @@ std::pair<std::string, storage_ptr_t> Storage::make_pair() {
 }
 
 entry_ptr_t Storage::resolve(const std::string& url) {
-    return get_or_create(split(url), [](const fs::path& path) { return fs::status(path); });
+    return get_or_insert(split(url), [](const fs::path& path) { return fs::status(path); });
 }
 
 std::string Storage::to_url(const fs::path& path) const {
     return scheme_ + path.string();
 }
 
-entry_ptr_t Storage::get_or_create(const fs::path& path, lazy_status_t get_status) {
-    std::lock_guard<std::mutex> lock{ mutex_ };
-    auto str = path.string();
-    auto lb = entries_.lower_bound(str);
-    if (lb != entries_.end() && !entries_.key_comp()(str, lb->first)) {
+entry_ptr_t Storage::get_or_insert(const fs::path& path, lazy_status_t get_status) {
+    std::lock_guard<entries_t> lock{ entries_ };
+    auto& entries = entries_.get(lock);
+    auto lb  = entries.lower_bound(path);
+    if (lb != entries.end() && !entries.key_comp()(path, lb->first)) {
         return lb->second;
     }
     auto status = get_status(path);
@@ -51,7 +50,7 @@ entry_ptr_t Storage::get_or_create(const fs::path& path, lazy_status_t get_statu
         return nullptr;
     }
     auto entry = create(path, status);
-    entries_.insert(lb, entries_t::value_type{ str, entry });
+    entries.insert(lb, entry_map_t::value_type{ path, entry });
     return entry;
 }
 
@@ -78,7 +77,7 @@ std::vector<entry_ptr_t> Storage::ls(const fs::path& path) {
 #endif
     {
         content.push_back(
-            get_or_create(dir_entry.path(),
+            get_or_insert(dir_entry.path(),
                           [&dir_entry](const fs::path&) {
                             return dir_entry.status();
                           }));

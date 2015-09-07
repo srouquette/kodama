@@ -10,6 +10,7 @@
 #include "filesystem/forward_decl.h"
 #include "filesystem/namespace.h"
 #include "platform/pragma.h"
+#include "thread/lockable.h"
 
 #include <boost/signals2.hpp>
 
@@ -53,17 +54,17 @@ class Storage : public std::enable_shared_from_this<Storage> {
     fs::path split(const std::string& url) const;
 
  private:
-    using entries_t = std::map<std::string, entry_ptr_t>;
+    using entry_map_t   = std::map<fs::path, entry_ptr_t>;
+    using entries_t     = thread::Lockable<entry_map_t, std::mutex>;
     using lazy_status_t = std::function<fs::file_status (const fs::path& path)>;
 
-    entry_ptr_t get_or_create(const fs::path& path, lazy_status_t get_status);
+    entry_ptr_t get_or_insert(const fs::path& path, lazy_status_t get_status);
 
     signal_t            on_create_;
     signal_t            on_delete_;
 
-    entries_t           entries_;
-    mutable std::mutex  mutex_;
-    std::string         scheme_;
+    mutable entries_t   entries_;
+    const std::string   scheme_;
 };
 
 }  // namespace filesystem
