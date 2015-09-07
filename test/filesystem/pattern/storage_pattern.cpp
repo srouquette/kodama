@@ -32,17 +32,16 @@ TEST_P(StoragePattern, resolve_valid_path) {
     auto storage = GetParam().storage();
     auto path    = GetParam().create_dir(DIRNAME);
     auto url     = storage->to_url(path);
-    ASSERT_NE(nullptr, storage->resolve(url));
-}
-
-TEST_P(StoragePattern, resolve_valid_path_then_check_entry) {
-    auto storage = GetParam().storage();
-    auto path    = GetParam().create_dir(DIRNAME);
-    auto url     = storage->to_url(path);
     auto entry   = storage->resolve(url);
     ASSERT_NE(entry, nullptr);
     ASSERT_EQ(entry->url(), url);
+    ASSERT_EQ(entry->path(), path);
     ASSERT_TRUE(entry->exists());
+}
+
+TEST_P(StoragePattern, resolve_invalid_path) {
+    auto storage = GetParam().storage();
+    ASSERT_EQ(nullptr, storage->resolve("/invalid_path"));
 }
 
 TEST_P(StoragePattern, on_create_signal) {
@@ -89,11 +88,6 @@ TEST_P(StoragePattern, check_is_file) {
     auto entry   = storage->resolve(url);
     ASSERT_NE(entry, nullptr);
     ASSERT_FALSE(entry->is_dir());
-}
-
-TEST_P(StoragePattern, resolve_invalid_path) {
-    auto storage = GetParam().storage();
-    ASSERT_EQ(nullptr, storage->resolve("/invalid_path"));
 }
 
 TEST_P(StoragePattern, ls_nonexistent) {

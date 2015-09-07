@@ -22,13 +22,6 @@ const fs::path PATH{ "path" };
 const std::string URL = SCHEME + PATH.string();
 const fs::file_status STATUS;
 
-TEST(EntryTest, same_url) {
-    auto storage = std::make_shared<MockStorage>(SCHEME);
-    auto entry   = storage->create(PATH, STATUS);
-    ASSERT_NE(entry, nullptr);
-    ASSERT_EQ(entry->url(), URL);
-}
-
 TEST(EntryTest, equals) {
     auto storage = std::make_shared<MockStorage>(SCHEME);
     auto entry1 = storage->create(PATH, STATUS);
