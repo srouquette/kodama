@@ -33,9 +33,11 @@ class Lockable {
     void lock() {
         mutex_.lock();
     }
+
     bool try_lock() {
         return mutex_.try_lock();
     }
+
     void unlock() {
         mutex_.unlock();
     }
@@ -45,17 +47,19 @@ class Lockable {
         value_ = std::forward<T>(value);
         return *this;
     }
-    const T clone() const {
+
+    operator T() const {
         std::lock_guard<Mutex> lock{ mutex_ };
         return value_;
     }
 
-    // unsafe, need to be locked externally
-    void assign(T&& value) {
+    template<typename U>
+    void set(T&& value, const std::lock_guard<U>&) {
         value_ = std::forward<T>(value);
     }
-    // unsafe, need to be locked externally
-    operator const T&() const {
+
+    template<typename U>
+    const T& get(const std::lock_guard<U>&) const {
         return value_;
     }
 
