@@ -61,12 +61,8 @@ bool Entry::is_dir() const {
 
 void Entry::ls() {
     auto storage = get_storage();
-    {
-        std::lock_guard<status_t> lock{ status_ };
-        update_status(*storage, lock);
-        if (!storage->is_dir(status_.get(lock))) {
-            throw EXCEPTION(__FUNCTION__, url_, not_a_directory);
-        }
+    if (!is_dir(*storage)) {
+        throw EXCEPTION(__FUNCTION__, url_, not_a_directory);
     }
     content_ = storage->ls(path_);
     on_update_(*this);
@@ -83,11 +79,13 @@ storage_ptr_t Entry::get_storage() const {
     return storage_.lock();
 }
 
-void Entry::update_status(const Storage& storage, const std::lock_guard<status_t>& lock) const {
+bool Entry::is_dir(const Storage& storage) const {
+    std::lock_guard<status_t> lock{ status_ };
     status_.set(storage.status(path_), lock);
     if (!storage.exists(status_.get(lock))) {
         throw EXCEPTION(__FUNCTION__, url_, no_such_file_or_directory);
     }
+    return storage.is_dir(status_.get(lock));
 }
 
 }  // namespace filesystem
