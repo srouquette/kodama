@@ -8,7 +8,8 @@
 #include "test/common/exception.h"
 #include "test/filesystem/mock/storage.h"
 
-#include "gmock/gmock.h"
+#include <gmock/gmock.h>
+
 
 namespace kodama { namespace filesystem {
 namespace fs = FILESYSTEM_NAMESPACE;

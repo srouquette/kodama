@@ -30,9 +30,9 @@ class Storage : public std::enable_shared_from_this<Storage> {
     using signal_t = boost::signals2::signal<void (const Entry&)>;
 
     explicit Storage(const std::string& scheme);
-    Storage(const Storage&)             = default;
+    Storage(const Storage&)             = delete;
     Storage(Storage&&)                  = default;
-    Storage& operator=(const Storage&)  = default;
+    Storage& operator=(const Storage&)  = delete;
     Storage& operator=(Storage&&)       = default;
     virtual ~Storage();
 
@@ -47,10 +47,8 @@ class Storage : public std::enable_shared_from_this<Storage> {
     virtual entry_ptr_t create(const fs::path& path, const fs::file_status& status);
     virtual bool exists(const fs::file_status& status) const;
     virtual bool is_dir(const fs::file_status& status) const;
-    // gmock doesn't like fs::path as a parameter, I'll pass the Entry instead
-    // https://code.google.com/p/googlemock/issues/detail?id=170
-    virtual std::vector<entry_ptr_t> ls(const Entry& entry);
-    virtual fs::file_status status(const Entry& entry) const;
+    virtual std::vector<entry_ptr_t> ls(const fs::path& path);
+    virtual fs::file_status status(const fs::path& path) const;
 
     fs::path split(const std::string& url) const;
 

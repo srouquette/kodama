@@ -37,5 +37,5 @@ def build(bld):
                 target       = dir + '-test',
                 features     = 'cpplint test',
                 includes     = '.. ../include',
-                source       = bld.path.ant_glob(dir + '/**/*.cpp'),
+                source       = bld.path.ant_glob('common/*.cpp %s/**/*.cpp' % dir),
                 use          = 'GTEST GMOCK GCOV BOOST kodama_' + dir)

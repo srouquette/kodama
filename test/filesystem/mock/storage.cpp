@@ -4,8 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "test/filesystem/mock/storage.h"
-#include "filesystem/entry.h"
-#include "filesystem/storage.h"
+#include "test/common/gtest.h"
 
 
 namespace kodama { namespace filesystem {

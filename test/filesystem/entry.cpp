@@ -8,7 +8,7 @@
 #include "test/filesystem/mock/storage.h"
 #include "test/common/exception.h"
 
-#include "gmock/gmock.h"
+#include <gmock/gmock.h>
 
 #include <iostream>
 #include <vector>

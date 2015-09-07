@@ -37,9 +37,9 @@ class Entry {
           const fs::file_status& status,
           const key&);
 
-    Entry(const Entry&)         = default;
+    Entry(const Entry&)         = delete;
     Entry(Entry&&)              = default;
-    Entry& operator=(const Entry&)  = default;
+    Entry& operator=(const Entry&)  = delete;
     Entry& operator=(Entry&&)   = default;
     ~Entry();
 

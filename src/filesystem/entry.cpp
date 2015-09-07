@@ -8,7 +8,7 @@
 #include "filesystem/storage.h"
 
 #include <boost/signals2.hpp>
-
+#include <iostream>
 
 namespace kodama { namespace filesystem {
 namespace fs = FILESYSTEM_NAMESPACE;
@@ -60,13 +60,15 @@ bool Entry::is_dir() const {
 }
 
 void Entry::ls() {
-    std::lock_guard<status_t> lock{ status_ };
     auto storage = get_storage();
-    update_status(*storage);
-    if (!storage->is_dir(status_)) {
-        throw EXCEPTION(__FUNCTION__, url_, not_a_directory);
+    {
+        std::lock_guard<status_t> lock{ status_ };
+        update_status(*storage);
+        if (!storage->is_dir(status_)) {
+            throw EXCEPTION(__FUNCTION__, url_, not_a_directory);
+        }
     }
-    content_ = storage->ls(*this);
+    content_ = storage->ls(path_);
     on_update_(*this);
 }
 
@@ -82,7 +84,7 @@ storage_ptr_t Entry::get_storage() const {
 }
 
 void Entry::update_status(const Storage& storage) const {
-    status_.assign(storage.status(*this));
+    status_.assign(storage.status(path_));
     if (!storage.exists(status_)) {
         throw EXCEPTION(__FUNCTION__, url_, no_such_file_or_directory);
     }

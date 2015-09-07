@@ -7,7 +7,9 @@
 #define TEST_FILESYSTEM_PATTERN_STORAGE_PATTERN_H_
 
 #include "test/filesystem/pattern/storage_helper.h"
-#include "gtest/gtest.h"
+
+#include <gtest/gtest.h>
+
 
 namespace kodama { namespace filesystem {
 

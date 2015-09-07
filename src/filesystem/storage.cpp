@@ -32,7 +32,6 @@ std::pair<std::string, storage_ptr_t> Storage::make_pair() {
 }
 
 entry_ptr_t Storage::resolve(const std::string& url) {
-    std::lock_guard<std::mutex> lock{ mutex_ };
     return get_or_create(split(url), [](const fs::path& path) { return fs::status(path); });
 }
 
@@ -41,6 +40,7 @@ std::string Storage::to_url(const fs::path& path) const {
 }
 
 entry_ptr_t Storage::get_or_create(const fs::path& path, lazy_status_t get_status) {
+    std::lock_guard<std::mutex> lock{ mutex_ };
     auto str = path.string();
     auto lb = entries_.lower_bound(str);
     if (lb != entries_.end() && !entries_.key_comp()(str, lb->first)) {
@@ -69,13 +69,12 @@ bool Storage::is_dir(const fs::file_status& status) const {
     return fs::is_directory(status);
 }
 
-std::vector<entry_ptr_t> Storage::ls(const Entry& entry) {
-    std::lock_guard<std::mutex> lock{ mutex_ };
+std::vector<entry_ptr_t> Storage::ls(const fs::path& path) {
     Entry::entries_t content;
 #if USE_DIR_RANGE_ITERATOR
-    for (const auto& dir_entry : fs::directory_iterator(entry.path()))
+    for (const auto& dir_entry : fs::directory_iterator(path))
 #else
-    for (const auto& dir_entry : boost::make_iterator_range(fs::directory_iterator(entry.path()), fs::directory_iterator()))
+    for (const auto& dir_entry : boost::make_iterator_range(fs::directory_iterator(path), fs::directory_iterator()))
 #endif
     {
         content.push_back(
@@ -87,8 +86,8 @@ std::vector<entry_ptr_t> Storage::ls(const Entry& entry) {
     return content;
 }
 
-fs::file_status Storage::status(const Entry& entry) const {
-    return fs::status(entry.path());
+fs::file_status Storage::status(const fs::path& path) const {
+    return fs::status(path);
 }
 
 fs::path Storage::split(const std::string& url) const {

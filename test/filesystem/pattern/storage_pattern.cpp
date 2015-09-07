@@ -136,5 +136,12 @@ TEST_P(StoragePattern, ls) {
     }));
 }
 
+// TEST_P(StoragePattern, ls_perf) {
+//     auto storage = GetParam().storage();
+//     auto entry   = storage->resolve("z:/torrent/nolife_mp3");
+//     ASSERT_NE(entry, nullptr);
+//     ASSERT_NO_THROW(entry->ls());
+// }
+
 }  // namespace filesystem
 }  // namespace kodama

@@ -10,10 +10,11 @@
 #include "filesystem/entry.h"
 #include "filesystem/storage.h"
 
-#include "gmock/gmock.h"
+#include <gmock/gmock.h>
 
 
 namespace kodama { namespace filesystem {
+namespace fs = FILESYSTEM_NAMESPACE;
 
 class MockStorage : public Storage {
  public:
@@ -25,8 +26,8 @@ class MockStorage : public Storage {
     MOCK_METHOD1(resolve, entry_ptr_t (const std::string&));
     MOCK_CONST_METHOD1(is_dir, bool (const fs::file_status&));
     MOCK_CONST_METHOD1(exists, bool (const fs::file_status&));
-    MOCK_METHOD1(ls, std::vector<entry_ptr_t> (const Entry&));
-    MOCK_CONST_METHOD1(status, fs::file_status (const Entry&));
+    MOCK_METHOD1(ls, std::vector<entry_ptr_t> (const fs::path&));
+    MOCK_CONST_METHOD1(status, fs::file_status (const fs::path&));
 };
 
 }  // namespace filesystem
