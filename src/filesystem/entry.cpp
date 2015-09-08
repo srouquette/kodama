@@ -29,7 +29,7 @@ Entry::Entry(const storage_ptr_t& storage,
 Entry::~Entry()
 {}
 
-bool Entry::operator==(const Entry& rhs) const {
+bool Entry::operator==(const Entry& rhs) const noexcept {
     return url_ == rhs.url();
 }
 

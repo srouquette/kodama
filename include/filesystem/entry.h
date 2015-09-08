@@ -43,7 +43,7 @@ class Entry {
     Entry& operator=(Entry&&)   = default;
     ~Entry();
 
-    bool operator==(const Entry& rhs) const;
+    bool operator==(const Entry& rhs) const noexcept;
 
     SIGNAL_CONNECTOR(on_update);
 
