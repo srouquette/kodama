@@ -14,6 +14,7 @@ addons:
     - gcc-4.9
     - g++-4.9
     - libboost1.55-all-dev
+    - valgrind
 
 compiler:
   - g++
