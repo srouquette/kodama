@@ -19,11 +19,11 @@ Entry::Entry(const storage_ptr_t& storage,
              const fs::file_status& status,
              const key&)
     : on_update_{}
-    , path_{ path }
     , storage_{ storage }
     , url_{ url }
-    , content_{}
+    , path_{ path }
     , status_{ status }
+    , content_{}
 {}
 
 Entry::~Entry()

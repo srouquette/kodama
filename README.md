@@ -3,10 +3,8 @@ multi-threaded orthodox file manager
 
 ----
 [![Build Status](https://travis-ci.org/srouquette/kodama.svg)](https://travis-ci.org/srouquette/kodama)
-[![Coverage Status](https://coveralls.io/repos/srouquette/kodama/badge.svg?branch=develop&service=github)](https://coveralls.io/github/srouquette/kodama)
-<!---
 [![Coverity Status](https://scan.coverity.com/projects/6257/badge.svg)](https://scan.coverity.com/projects/srouquette-kodama)
---->
+[![Coverage Status](https://coveralls.io/repos/srouquette/kodama/badge.svg?branch=develop&service=github)](https://coveralls.io/github/srouquette/kodama)
 
 ## Linux
 ```shell

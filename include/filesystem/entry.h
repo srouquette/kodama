@@ -39,7 +39,7 @@ class Entry {
 
     Entry(const Entry&)         = delete;
     Entry(Entry&&)              = default;
-    Entry& operator=(const Entry&)  = delete;
+    Entry& operator=(const Entry&) = delete;
     Entry& operator=(Entry&&)   = default;
     ~Entry();
 
@@ -64,12 +64,12 @@ class Entry {
 
     signal_t                    on_update_;
 
-    const fs::path              path_;
     // weak_ptr to prevent circular ref
     std::weak_ptr<Storage>      storage_;
     const std::string           url_;
-    mutable content_t           content_;
+    const fs::path              path_;
     mutable status_t            status_;
+    mutable content_t           content_;
 };
 
 }  // namespace filesystem
