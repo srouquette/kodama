@@ -11,7 +11,6 @@
 #include <iostream>
 
 namespace kodama { namespace filesystem {
-namespace fs = FILESYSTEM_NAMESPACE;
 
 Entry::Entry(const storage_ptr_t& storage,
              const std::string& url,
@@ -79,7 +78,7 @@ storage_ptr_t Entry::get_storage() const {
     return storage_.lock();
 }
 
-bool Entry::is_dir(const Storage& storage) const {
+bool Entry::is_dir(const Storage& storage) {
     std::lock_guard<status_t> lock{ status_ };
     status_.set(storage.status(path_), lock);
     if (!storage.exists(status_.get(lock))) {

@@ -12,7 +12,6 @@
 
 
 namespace kodama { namespace filesystem {
-namespace fs = FILESYSTEM_NAMESPACE;
 
 const std::string SCHEME{ "mock://" };
 const std::string PATH{ "path" };

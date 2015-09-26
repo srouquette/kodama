@@ -10,7 +10,6 @@
 #include <iostream>
 
 namespace kodama { namespace filesystem {
-namespace fs = FILESYSTEM_NAMESPACE;
 
 void UrlResolver::add(const storage_ptr_t& storage) {
     std::lock_guard<std::mutex> lock{ mutex_ };

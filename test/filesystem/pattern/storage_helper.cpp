@@ -12,7 +12,6 @@
 
 
 namespace kodama { namespace filesystem {
-namespace fs = FILESYSTEM_NAMESPACE;
 
 StorageHelper::~StorageHelper() noexcept {
     for (const auto& path : entries_) {

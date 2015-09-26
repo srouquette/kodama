@@ -8,7 +8,6 @@
 
 
 namespace kodama { namespace filesystem {
-namespace fs = FILESYSTEM_NAMESPACE;
 
 MockStorage::MockStorage(const std::string& scheme)
     : Storage(scheme)

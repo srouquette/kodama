@@ -9,7 +9,7 @@
 #include "filesystem/namespace.h"
 
 
-#if STL_FILESYSTEM_ENABLED
+#if STL_FILESYSTEM_SUPPORTED
 
 namespace std { namespace experimental { namespace filesystem { namespace v1 {
     void PrintTo(const path& p, std::ostream* os);
@@ -18,7 +18,7 @@ namespace std { namespace experimental { namespace filesystem { namespace v1 {
 }  // namespace experimental
 }  // namespace std
 
-#else  // STL_FILESYSTEM_ENABLED
+#else  // STL_FILESYSTEM_SUPPORTED
 
 namespace boost { namespace filesystem {
     void PrintTo(const path& p, std::ostream* os);

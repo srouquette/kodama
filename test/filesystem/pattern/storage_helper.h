@@ -15,7 +15,6 @@
 
 
 namespace kodama { namespace filesystem {
-namespace fs = FILESYSTEM_NAMESPACE;
 
 class StorageHelper {
  public:

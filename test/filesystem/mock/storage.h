@@ -14,7 +14,6 @@
 
 
 namespace kodama { namespace filesystem {
-namespace fs = FILESYSTEM_NAMESPACE;
 
 class MockStorage : public Storage {
  public:

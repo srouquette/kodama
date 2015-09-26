@@ -23,7 +23,6 @@ WARNING_DISABLE_GCC("-Wnon-virtual-dtor")  // enable_shared_from_this
 
 
 namespace kodama { namespace filesystem {
-namespace fs = FILESYSTEM_NAMESPACE;
 
 class Storage : public std::enable_shared_from_this<Storage> {
  public:

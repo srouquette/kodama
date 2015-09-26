@@ -47,5 +47,13 @@ Edit env.bat and specify where Boost and Qt are located.
     cd bin\release
     kodama.exe
 ```
+
+### Roadmap
+
+- basic navigation (cd, cd parent)
+- thread
+- basic application model (panel, tab, dir management)
+- Qt integration
+
 ## License
 [MPL 2.0](https://www.mozilla.org/MPL/2.0/)

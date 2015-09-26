@@ -6,16 +6,28 @@
 #ifndef INCLUDE_FILESYSTEM_NAMESPACE_H_
 #define INCLUDE_FILESYSTEM_NAMESPACE_H_
 
-#if STL_FILESYSTEM_ENABLED
+#if STL_FILESYSTEM_SUPPORTED
 
 #include <filesystem>
-#define FILESYSTEM_NAMESPACE    std::tr2::sys
 
-#else  // STL_FILESYSTEM_ENABLED
+namespace kodama { namespace filesystem {
+
+namespace fs = std::tr2::sys;
+
+}  // namespace filesystem
+}  // namespace kodama
+
+#else  // STL_FILESYSTEM_SUPPORTED
 
 #include <boost/filesystem.hpp>
-#define FILESYSTEM_NAMESPACE    boost::filesystem
 
-#endif  // STL_FILESYSTEM_ENABLED
+namespace kodama { namespace filesystem {
+
+namespace fs = boost::filesystem;
+
+}  // namespace filesystem
+}  // namespace kodama
+
+#endif  // STL_FILESYSTEM_SUPPORTED
 
 #endif  // INCLUDE_FILESYSTEM_NAMESPACE_H_

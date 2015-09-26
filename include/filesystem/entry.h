@@ -18,7 +18,6 @@
 
 
 namespace kodama { namespace filesystem {
-namespace fs = FILESYSTEM_NAMESPACE;
 
 class Entry {
  public:
@@ -60,7 +59,7 @@ class Entry {
     using status_t  = thread::Lockable<fs::file_status, std::mutex>;
 
     storage_ptr_t get_storage() const;
-    bool is_dir(const Storage& storage) const;
+    bool is_dir(const Storage& storage);
 
     signal_t                    on_update_;
 

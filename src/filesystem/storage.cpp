@@ -14,7 +14,6 @@
 #endif
 
 namespace kodama { namespace filesystem {
-namespace fs = FILESYSTEM_NAMESPACE;
 
 Storage::Storage(const std::string& scheme)
     : on_create_{}

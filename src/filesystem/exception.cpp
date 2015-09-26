@@ -7,22 +7,21 @@
 
 
 namespace kodama { namespace filesystem {
-namespace fs = FILESYSTEM_NAMESPACE;
 
-#if STL_FILESYSTEM_ENABLED
+#if STL_FILESYSTEM_SUPPORTED
 
 struct filesystem_error::impl {
-    explicit impl(const FILESYSTEM_NAMESPACE::path& path1)
+    explicit impl(const fs::path& path1)
         : what_{}
         , path1_{ path1 }
     {}
 
     std::string what_;
-    FILESYSTEM_NAMESPACE::path path1_;
+    fs::path path1_;
 };
 
 filesystem_error::filesystem_error(const std::string& what,
-                                   const FILESYSTEM_NAMESPACE::path& path1,
+                                   const fs::path& path1,
                                    std::error_code error_code)
     : std::system_error(error_code, what)
 {
